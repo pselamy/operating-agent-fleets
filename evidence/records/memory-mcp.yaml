@@ -1,0 +1,48 @@
+{
+  "id": "artifact.memory-mcp",
+  "title": "memory-mcp versioned and semantic memory interfaces",
+  "evidence_class": "repository_artifact",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "reverify_after_days": 14,
+  "cutoff": "commit 64f0d16dc08dfe3bb8a94889455dc47eedaa6a61 and test run 29163218047",
+  "public_sources": [
+    "https://github.com/selamy-labs/memory-mcp",
+    "https://github.com/selamy-labs/memory-mcp/commit/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61",
+    "https://github.com/selamy-labs/memory-mcp/blob/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61/README.md",
+    "https://github.com/selamy-labs/memory-mcp/blob/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61/docs/shared-semantic-memory.md",
+    "https://github.com/selamy-labs/memory-mcp/blob/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61/src/memory_mcp/semantic.py",
+    "https://github.com/selamy-labs/memory-mcp/blob/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61/src/memory_mcp/indexer.py",
+    "https://github.com/selamy-labs/memory-mcp/blob/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61/src/memory_mcp/pgvector_store.py",
+    "https://github.com/selamy-labs/memory-mcp/blob/64f0d16dc08dfe3bb8a94889455dc47eedaa6a61/templates/networkpolicy.yaml",
+    "https://github.com/selamy-labs/memory-mcp/actions/runs/29163218047",
+    "https://github.com/selamy-labs/memory-mcp/issues/26",
+    "https://github.com/selamy-labs/memory-mcp/tree/v0.1.0"
+  ],
+  "claims": [
+    "The public MIT-licensed repository defines a local stdio interface over Markdown files and a separate networked semantic interface backed by an injected vector store.",
+    "The semantic interface supports add, search, and get operations keyed by a scope and name; search blends semantic, recency, and keyword signals across explicitly requested scopes and includes the shared scope by default.",
+    "The pgvector implementation stores records under a composite scope-and-name key, parameterizes scope filters, and stores the body, metadata fields, embedding, and update time used by ranked retrieval.",
+    "The indexer walks configured Markdown roots, derives indexable records, and idempotently upserts them into a selected scope; the repository documents dropping and rebuilding the derived table from Markdown sources.",
+    "The cutoff test workflow completed successfully with a 95 percent coverage threshold, and public release v0.1.0 existed at the cutoff."
+  ],
+  "consumer": "Public downstream deployment, configured agents, and actual invocation are not established by this record.",
+  "outcome": "The repository provides inspectable mechanisms for versioned Markdown memory and derived scoped semantic recall; effective fleet-wide knowledge sharing remains unproven.",
+  "verification_method": [
+    "Inspected the immutable local and networked interface documentation, semantic core, Markdown indexer, pgvector store, and network-policy template.",
+    "Traced add, search, get, scope selection, Markdown indexing, and pgvector upsert behavior in source and tests.",
+    "Verified the successful cutoff test workflow and public v0.1.0 tag.",
+    "Compared the implemented fields and write paths with the unresolved governance and end-to-end proof requirements in public issue 26."
+  ],
+  "limitations": [
+    "The shared add operation writes directly to the vector store; the public source does not prove that every durable semantic write is first committed to authoritative Markdown-in-Git.",
+    "A scope is a query namespace in the inspected core, not a demonstrated caller authorization boundary; live identity, read/write isolation, and network-policy enforcement are unverified.",
+    "Search and get results expose record fields and scores but do not establish a complete source repository, path, commit, author, evidence class, privacy class, supersession, or retention provenance contract.",
+    "The shared semantic interface has no correction, tombstone, or delete operation, and an incremental reindex only upserts discovered files; removal and orphan detection require additional procedure or implementation.",
+    "Repository source and green tests do not prove a live healthy deployment, configured consumer reachability, index freshness, retrieval quality, poisoning resistance, recovery rehearsal, utilization, or task-value improvement.",
+    "The network-policy template is declarative source, not live enforcement evidence, and namespace-level ingress does not by itself enforce domain-memory authorization.",
+    "The public v0.1.0 tag predates the cutoff commit, so cutoff behavior is not asserted to be present in that release."
+  ],
+  "sensitivity": "public",
+  "status": "limited"
+}
