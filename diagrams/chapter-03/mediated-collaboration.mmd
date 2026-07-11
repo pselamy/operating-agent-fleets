@@ -1,0 +1,42 @@
+%% Reader question: How can agents collaborate across systems without direct mind-to-mind state sharing?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference design; laneq transaction behavior is verified, complete private deployment is not publicly reproducible
+sequenceDiagram
+    accTitle: Mediated cross-plane collaboration
+    accDescr: A human records an outcome and authority boundary in durable work state. A domain agent leases the item, uses a skill to select a scoped typed capability, records a claim and evidence, and hands the item to an independent verifier. The verifier inspects the real artifact and either accepts, narrows, or requeues the work. Consequential decisions return to the human.
+
+    actor H as Human decision owner
+    participant W as Durable work substrate
+    participant A as Domain agent
+    participant R as Skill and context router
+    participant S as External system of record
+    participant E as Evidence record
+    participant V as Independent verifier
+
+    H->>W: Record outcome, consequence, and required evidence
+    A->>W: Lease next eligible work item
+    W-->>A: Scoped task, cutoff, and authority boundary
+    A->>R: Select procedure and callable capability
+    R->>S: Bounded typed request
+    S-->>R: Scoped result with source identity
+    R-->>A: Minimized context and limitations
+
+    alt Consequence requires human judgment
+        A->>H: Present decision, alternatives, and evidence
+        H-->>A: Approve, revise, or stop
+    end
+
+    A->>E: Record claim, artifact identity, and limitations
+    A->>W: Submit completion claim with evidence ID
+    W->>V: Route verification work
+    V->>S: Inspect the real public or approved artifact
+    S-->>V: Current artifact state
+    V->>E: Record independent result
+
+    alt Evidence supports the exact claim
+        V->>W: Accept verified outcome
+    else Evidence supports a narrower claim
+        V->>W: Narrow claim and preserve limitation
+    else Evidence is missing or contradictory
+        V->>W: Requeue with actionable failure evidence
+    end

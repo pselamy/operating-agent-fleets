@@ -1,0 +1,6 @@
+{
+  "deterministicIds": true,
+  "deterministicIDSeed": "operating-agent-fleets-v1",
+  "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+  "theme": "neutral"
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "renderer": {
+    "package": "@mermaid-js/mermaid-cli",
+    "version": "11.16.0",
+    "source": "https://www.npmjs.com/package/@mermaid-js/mermaid-cli/v/11.16.0"
+  },
+  "diagrams": [
+    {
+      "id": "chapter-03.skill-propagation",
+      "title": "Skill and knowledge propagation",
+      "reader_question": "How does a learning become a consumable constraint without assuming instant fleet-wide propagation?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-03/skill-propagation.mmd",
+      "source_sha256": "0f85faa9c6aefdfebad473c46f9929d8f06524c3d0773ec1d209937a184488f5",
+      "evidence_ids": ["artifact.public-agent-skills", "artifact.public-mcp-repositories"],
+      "alt_text": "Flowchart showing a learning move from sourced candidate through the skill-or-tool decision, audience classification, review, versioned release, consumer upgrade, loading evidence, and outcome measurement. A separate path reviews and pins an existing upstream artifact.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "skill-propagation-light",
+          "path": "diagrams/chapter-03/skill-propagation.light.svg",
+          "sha256": "2f447e59eb24bd8746b164d17295eb09e8a426acb86dfe0b6cd8af7c98650364"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "skill-propagation-dark",
+          "path": "diagrams/chapter-03/skill-propagation.dark.svg",
+          "sha256": "348871a1c653b01f62b85dc0ddb5aec1eb08048c68e599802c524bcad345a7dc"
+        }
+      ]
+    },
+    {
+      "id": "chapter-03.mediated-collaboration",
+      "title": "Mediated cross-plane collaboration",
+      "reader_question": "How can agents collaborate across systems without direct mind-to-mind state sharing?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-03/mediated-collaboration.mmd",
+      "source_sha256": "3d42e7d134d06c6bde38415dcc5a8c636cc94e7a183cc5848b3edeef44b37f7d",
+      "evidence_ids": ["artifact.laneq", "artifact.public-agent-skills", "artifact.public-mcp-repositories"],
+      "alt_text": "Sequence diagram showing a human placing bounded work in a durable substrate, a domain agent using a skill and typed capability, an evidence record receiving the claim, and an independent verifier accepting, narrowing, or requeuing the result after inspecting the real artifact.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "mediated-collaboration-light",
+          "path": "diagrams/chapter-03/mediated-collaboration.light.svg",
+          "sha256": "c60a930aa660ecb842be2549848a85238ef9eed568e21748282f2fe14c464daf"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "mediated-collaboration-dark",
+          "path": "diagrams/chapter-03/mediated-collaboration.dark.svg",
+          "sha256": "da1d41dd0d6cd7d25720bfe420180d3abab76865668aa5859aa7dcda09bd46e1"
+        }
+      ]
+    }
+  ]
+}

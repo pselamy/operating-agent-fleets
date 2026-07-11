@@ -93,6 +93,10 @@ The public skills repository proves steps in authoring and distribution. It does
 
 The same rule applies to MCP. At its cutoff, the public aggregator manifest defined seven named configurations backed by six public repositories, each pinned to a Git tag. The human-facing README had drifted behind the manifest: it still described five repositories and an obsolete telemetry pin. That discrepancy is useful evidence. Versioned manifests reduce ambiguity, but they do not eliminate documentation drift; a gate must compare the two. [The corrective issue is public](https://github.com/selamy-labs/agent-mcp/issues/21). [@evidence:artifact.public-mcp-repositories]
 
+![Flowchart showing a learning move from sourced candidate through the skill-or-tool decision, audience classification, review, versioned release, consumer upgrade, loading evidence, and outcome measurement. A separate path reviews and pins an existing upstream artifact.](../diagrams/chapter-03/skill-propagation.light.svg)
+
+_Figure 3.1 — Skill and knowledge propagation is a release process. This is a reference design; the public evidence verifies distribution mechanics, not private adoption._
+
 ## Context routing without mind-to-mind communication
 
 Agents do not need direct access to one another's hidden state. In a durable system, context moves through mediated, inspectable paths.
@@ -110,6 +114,10 @@ The following is a **reference design**, not an observed end-to-end deployment c
 This pattern is **mediated coordination**, not a peer-to-peer mesh and not a hive mind. The substrate—not a model's private context window—carries the durable state.
 
 Least-privilege retrieval is only the first privacy boundary. Sensitive tool output also needs minimization, prompt and log handling rules, retention and deletion policy, and review before it enters a wider durable handoff or public artifact. A bounded credential limits access; it does not make every returned detail safe to propagate.
+
+![Sequence diagram showing a human placing bounded work in a durable substrate, a domain agent using a skill and typed capability, an evidence record receiving the claim, and an independent verifier accepting, narrowing, or requeuing the result after inspecting the real artifact.](../diagrams/chapter-03/mediated-collaboration.light.svg)
+
+_Figure 3.2 — Cross-plane collaboration is mediated by durable state and evidence. The sequence is a reference design, not a claim that the complete private topology is publicly verified._
 
 The public laneq implementation illustrates one such substrate. Its shared take operation begins an immediate SQLite transaction, selects the highest-priority eligible item in one lane, records a consumer and lease, and commits. Expired leases and explicit requeues return work to pending while incrementing a counter. CLI, MCP, and optional gRPC interfaces delegate to the same core behavior. These are repository-level facts; public evidence does not establish fleet deployment, workload volume, or exactly-once execution. [Inspect laneq](https://github.com/selamy-labs/laneq). [@evidence:artifact.laneq]
 

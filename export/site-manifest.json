@@ -60,6 +60,30 @@
       "destination": "data/evidence/resume-as-code.json",
       "channel": "preview",
       "media_type": "application/json"
+    },
+    {
+      "source": "diagrams/chapter-03/mediated-collaboration.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-03/mediated-collaboration.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-03/mediated-collaboration.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-03/mediated-collaboration.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-03/skill-propagation.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-03/skill-propagation.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-03/skill-propagation.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-03/skill-propagation.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
     }
   ]
 }
