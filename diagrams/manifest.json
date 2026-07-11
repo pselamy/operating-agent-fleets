@@ -232,6 +232,31 @@
       ]
     },
     {
+      "id": "chapter-07.agent-lifecycle-state-machine",
+      "title": "Evidence-backed agent lifecycle state machine",
+      "reader_question": "How does an operator move from bounded evidence to a reversible agent lifecycle decision without ranking unlike mandates?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-07/agent-lifecycle-state-machine.mmd",
+      "source_sha256": "24f63166d1eea7d03d4ca03ed80a9eb42f5f26b5e7c5f6495afbd57dfdd296a0",
+      "evidence_ids": [],
+      "alt_text": "State machine showing a deployed capability move from a versioned charter through bounded observation and mandate-specific evidence review. Weak evidence returns to observation. Suspected low value enters a reversible probe: unsafe pauses record an exclusion, while allowed pauses support emergency abort, exercise restoration, verify service recovery, and then feed defined work. Sufficient evidence reaches a human-signed choice to invest, specialize, merge or subsume, repurpose, pause, or retire, with the chosen type retained through implementation. Only retirement enters terminal cleanup, which verifies consumer and work migration, queue disposition, credential revocation, retained data and memory handling, ownership transfer, and the applicable restore window.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "agent-lifecycle-state-machine-light",
+          "path": "diagrams/chapter-07/agent-lifecycle-state-machine.light.svg",
+          "sha256": "826e471bcde3d2576eb4e8dc989d2d1bd91f65af79c2d9c29ff30e3c8010ee1b"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "agent-lifecycle-state-machine-dark",
+          "path": "diagrams/chapter-07/agent-lifecycle-state-machine.dark.svg",
+          "sha256": "f8b45011521b89d0c279056815c9a8425dbed190e7a67bf4c6e60654ee292b0b"
+        }
+      ]
+    },
+    {
       "id": "chapter-02.consequence-authority-matrix",
       "title": "Consequence-based authority matrix",
       "reader_question": "How should requested authority, human involvement, and required evidence change as consequence, irreversibility, and sensitivity increase?",

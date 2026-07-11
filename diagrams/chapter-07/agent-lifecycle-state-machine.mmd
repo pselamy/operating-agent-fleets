@@ -1,0 +1,55 @@
+%% Reader question: How does an operator move from bounded evidence to a reversible agent lifecycle decision without ranking unlike mandates?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference design; no private agent evaluation, lifecycle decision, or fleet-wide adoption is asserted
+stateDiagram-v2
+    accTitle: Evidence-backed agent lifecycle state machine
+    accDescr: A deployed capability begins with a versioned charter, enters an observation window, and receives a mandate-specific evidence envelope. Missing evidence returns it to observation. Suspected low value enters a safety-checked pause and feed probe that records exclusions, supports emergency abort, restores the capability, and verifies restoration before feeding defined work. Sufficient evidence reaches a human-signed immutable decision to invest, specialize, merge or subsume, repurpose, pause, or retire. The selected decision type remains attached to its implementation. Retirement alone enters a cleanup contract that verifies consumer and work migration, queue disposition, credential revocation, data and memory handling, ownership transfer, and the applicable restore window before termination. Other verified outcomes return to scheduled or event-triggered reassessment.
+
+    [*] --> Chartered: versioned mandate and named consumers
+    Chartered --> Observing: open bounded evidence window
+    Observing --> EvidenceReview: collect mandate-specific envelope
+    EvidenceReview --> Observing: evidence missing or weak
+    EvidenceReview --> ProbeReady: suspected low value or underfeeding
+    EvidenceReview --> DecisionPending: sufficient evidence and limitations recorded
+
+    state "Reversible pause/feed probe" as Probe {
+        [*] --> SafetyCheck
+        SafetyCheck --> ExclusionRecorded: unsafe to pause
+        ExclusionRecorded --> [*]: preserve exclusion evidence
+        SafetyCheck --> PauseWindow: exclusions satisfied and restore tested
+        PauseWindow --> Restore: bounded pause completed
+        PauseWindow --> EmergencyRestore: unexpected harm and abort
+        EmergencyRestore --> Restore
+        Restore --> RestoreVerify: exercise restore path
+        RestoreVerify --> Restore: service not restored
+        RestoreVerify --> FeedWindow: restoration verified
+        FeedWindow --> [*]: defined backlog and consumer measured
+    }
+
+    ProbeReady --> Probe: preregister outcomes and rollback
+    Probe --> EvidenceReview: add probe or exclusion evidence
+
+    state Decision <<choice>>
+    DecisionPending --> Decision: human signs immutable decision record
+    Decision --> InvestPlan: invest
+    Decision --> SpecializePlan: specialize
+    Decision --> MergePlan: merge or subsume
+    Decision --> RepurposePlan: repurpose
+    Decision --> PausePlan: pause
+    Decision --> RetirePlan: retire
+
+    InvestPlan --> Implementing: retain invest decision type
+    SpecializePlan --> Implementing: retain specialization decision type
+    MergePlan --> Implementing: retain lineage and consumer migration obligations
+    RepurposePlan --> Implementing: retain old and new charter obligations
+    PausePlan --> Implementing: retain pause, safety, and restore obligations
+
+    Implementing --> Verifying: owner, immutable change, rollback or restore
+    Verifying --> Implementing: outcome absent, wrong, or unverified
+    Verifying --> Reassessment: outcome and enforcement verified
+    Reassessment --> Observing: scheduled review or material charter event
+
+    RetirePlan --> RetirementCleanup: approved retirement record
+    RetirementCleanup --> RetirementVerify: migrate consumers and work, disposition queues, revoke capabilities, handle data and memory, transfer ownership, preserve restore window
+    RetirementVerify --> RetirementCleanup: any postcondition missing or unverified
+    RetirementVerify --> [*]: cleanup verified and restore window closed or policy permits termination
