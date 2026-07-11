@@ -11,7 +11,7 @@ from tools.validate_diagrams import DiagramValidationError, ROOT, digest, valida
 
 class DiagramValidationTests(unittest.TestCase):
     def test_repository_diagrams_validate(self) -> None:
-        self.assertEqual(validate_diagrams(), 2)
+        self.assertEqual(validate_diagrams(), 4)
 
     def fixture(self):
         directory = tempfile.TemporaryDirectory()

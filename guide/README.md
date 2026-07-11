@@ -8,7 +8,7 @@ The finished guide will contain eight chapters. Each chapter must distinguish ve
 | [2. The tax filing collaboration](02-tax-and-authority.md) | How should authority change with consequence and sensitivity? | Scope defined; private review required |
 | [3. Skills instead of a monolithic framework](03-skills-and-context-routing.md) | How can capabilities and context propagate without a central orchestration framework? | Scope defined |
 | 4. Verification theater and the regression ratchet | What counts as proof, and how does a failure become a durable constraint? | Planned |
-| 5. Throughput without pretending every branch is current | How can supersession and serialization increase throughput without concealing integration risk? | Planned |
+| [5. Throughput without pretending every branch is current](05-throughput-and-supersession.md) | How can supersession and serialization increase throughput without concealing integration risk? | Drafted; public mechanisms verified, private rollout unverified |
 | 6. Memory without surrendering provenance | How can recall improve while authoritative knowledge remains inspectable and rebuildable? | Planned |
 | 7. Agents are a portfolio, not pets | How should an operator measure, specialize, repurpose, or retire agent capabilities? | Planned |
 | 8. The risks of bounded autonomy | Which risks remain even when authority is deliberately scoped? | Planned |

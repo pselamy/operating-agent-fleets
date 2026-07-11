@@ -55,6 +55,56 @@
           "sha256": "da1d41dd0d6cd7d25720bfe420180d3abab76865668aa5859aa7dcda09bd46e1"
         }
       ]
+    },
+    {
+      "id": "chapter-05.lane-scoped-supersession",
+      "title": "Lane-Scoped Supersession",
+      "reader_question": "How can newer revisions supersede stale validation without interrupting an active mutation?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-05/lane-scoped-supersession.mmd",
+      "source_sha256": "472bfd9b674ac474d538ddd6c9b14965d61226fe0b907d0e89e1985dc1105fd7",
+      "evidence_ids": ["artifact.laneq", "documentation.buildbuddy-capabilities"],
+      "alt_text": "Timeline showing revision B arrive and supersede waiting revision A, then revision C arrive and cancel side-effect-free validation B. After B acknowledges termination, C validates. A separate mutation lane lets an earlier mutation finish, resolves C's source SHA to an authorized artifact digest, mutates that digest next, and verifies the real target.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "lane-scoped-supersession-light",
+          "path": "diagrams/chapter-05/lane-scoped-supersession.light.svg",
+          "sha256": "8383c6072fd14e94f93831a334e45efe2b4eba10eb4614dfa3b158b9b068cd79"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "lane-scoped-supersession-dark",
+          "path": "diagrams/chapter-05/lane-scoped-supersession.dark.svg",
+          "sha256": "3c5a1f90314faee9cac21c6dee0586d4e132a212a5f742810dfd15ca1765d53e"
+        }
+      ]
+    },
+    {
+      "id": "chapter-05.buildbuddy-validation-flow",
+      "title": "BuildBuddy validation data flow",
+      "reader_question": "Which validation data flows belong to Bazel local execution, remote cache, Build Event Service, and optional remote execution?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-05/buildbuddy-validation-flow.mmd",
+      "source_sha256": "52cfee416cdb465afc45810ad6b07a687b0729f120e31308d0b00c69573a54fd",
+      "evidence_ids": ["documentation.buildbuddy-capabilities"],
+      "alt_text": "Data-flow diagram showing a source revision entering a credential-free Bazel validation job. Bazel executes eligible actions locally, queries a trust-scoped remote cache, and sends minimized build events to a separately controlled Build Event Service. Cache hits and local results feed tests; the authoritative validation result remains bound to the source SHA. Remote execution is shown as a separate disabled or experimental path, not implied by cache or event configuration.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "buildbuddy-validation-flow-light",
+          "path": "diagrams/chapter-05/buildbuddy-validation-flow.light.svg",
+          "sha256": "42b8d9c86a80c7503c6bd90f8739459f547ca0bd44811014c10a137a1443d468"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "buildbuddy-validation-flow-dark",
+          "path": "diagrams/chapter-05/buildbuddy-validation-flow.dark.svg",
+          "sha256": "330d6cc0653e13c458cecb38d5ebf0c51966d571f5cbff513f4fed27eb0cc658"
+        }
+      ]
     }
   ]
 }

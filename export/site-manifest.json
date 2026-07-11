@@ -14,6 +14,12 @@
       "media_type": "text/markdown"
     },
     {
+      "source": "guide/05-throughput-and-supersession.md",
+      "destination": "content/05-throughput-and-supersession.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
       "source": "docs/disclosure-policy.md",
       "destination": "content/disclosure-policy.md",
       "channel": "preview",
@@ -28,6 +34,12 @@
     {
       "source": "evidence/records/agent-skills.yaml",
       "destination": "data/evidence/agent-skills.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/buildbuddy-capabilities.yaml",
+      "destination": "data/evidence/buildbuddy-capabilities.json",
       "channel": "preview",
       "media_type": "application/json"
     },
@@ -82,6 +94,30 @@
     {
       "source": "diagrams/chapter-03/skill-propagation.dark.svg",
       "destination": "static/agent-fleets/diagrams/chapter-03/skill-propagation.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-05/lane-scoped-supersession.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-05/lane-scoped-supersession.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-05/lane-scoped-supersession.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-05/lane-scoped-supersession.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-05/buildbuddy-validation-flow.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-05/buildbuddy-validation-flow.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-05/buildbuddy-validation-flow.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-05/buildbuddy-validation-flow.dark.svg",
       "channel": "preview",
       "media_type": "image/svg+xml"
     }
