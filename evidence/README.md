@@ -11,6 +11,7 @@ Each record states:
 - a stable evidence ID and title;
 - evidence class and lineage;
 - verification date and evidence cutoff;
+- a bounded re-verification interval;
 - allowlisted public sources;
 - precise supported claims;
 - consumer and outcome when verified;
