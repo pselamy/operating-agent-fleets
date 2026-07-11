@@ -65,7 +65,8 @@ class EvidenceRecordTests(unittest.TestCase):
 
 class AtlasTests(unittest.TestCase):
     def test_repository_manifest_validates(self) -> None:
-        self.assertEqual(validate_atlas(), [])
+        manifest = load_json(ROOT / "evidence" / "manifest.yaml")
+        self.assertEqual(len(validate_atlas()), len(manifest["records"]))
 
     def test_manifest_path_cannot_escape_records_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

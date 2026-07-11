@@ -1,4 +1,6 @@
 {
   "schema_version": 1,
-  "records": []
+  "records": [
+    "evidence/records/operating-agent-fleets.yaml"
+  ]
 }
