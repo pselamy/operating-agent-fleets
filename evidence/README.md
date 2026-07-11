@@ -27,4 +27,6 @@ An `internally_corroborated` record contains no private locator. It may have an 
 4. Run `python3 tools/validate_evidence.py` and `python3 -m unittest discover -s tests`.
 5. Complete the factual and disclosure reviews for the exact revision.
 
+Chapter claims cite records with `[@evidence:artifact.example-id]`. Any paragraph in a numbered chapter that links to a GitHub artifact must contain at least one valid evidence citation in that same paragraph. A citation proves only the claims enumerated by its record; it is not a blanket endorsement of the paragraph.
+
 Do not add a private-evidence directory, restricted locator, raw source, real sensitive test value, or private repository content anywhere in this repository.
