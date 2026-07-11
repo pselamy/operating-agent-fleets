@@ -10,7 +10,7 @@ The finished guide will contain eight chapters. Each chapter must distinguish ve
 | 4. Verification theater and the regression ratchet | What counts as proof, and how does a failure become a durable constraint? | Planned |
 | [5. Throughput without pretending every branch is current](05-throughput-and-supersession.md) | How can supersession and serialization increase throughput without concealing integration risk? | Drafted; public mechanisms verified, private rollout unverified |
 | [6. Memory without surrendering provenance](06-memory-and-provenance.md) | How can recall improve while authoritative knowledge remains inspectable and rebuildable? | Drafted; repository mechanics verified, operational effectiveness unverified |
-| 7. Agents are a portfolio, not pets | How should an operator measure, specialize, repurpose, or retire agent capabilities? | Planned |
+| [7. Agents are a portfolio, not pets](07-agent-portfolio.md) | How should an operator measure, specialize, repurpose, or retire agent capabilities? | Protocol drafted; named fleet cases and rankings withheld pending evidence |
 | 8. The risks of bounded autonomy | Which risks remain even when authority is deliberately scoped? | Planned |
 
 ## Reading conventions
