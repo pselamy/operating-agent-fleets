@@ -1,0 +1,9 @@
+[run]
+source = tools
+branch = True
+
+[report]
+show_missing = True
+skip_covered = True
+exclude_also =
+    if __name__ == .__main__.:

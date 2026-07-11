@@ -1,0 +1,3 @@
+# PyPI release metadata and documentation: https://pypi.org/project/coverage/7.15.0/
+# The workflow installs the source distribution so this single PyPI-published hash is deterministic.
+coverage==7.15.0 --hash=sha256:9ac3fe7a1435986463eaa8ee253ae2f2a268709ba4ae5c7dd1f52a05391ad78f

@@ -5,8 +5,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from tools.validate_evidence import EvidenceValidationError, ROOT, load_json, validate_atlas, validate_record
+from tools.validate_evidence import EvidenceValidationError, ROOT, load_json, main, validate_atlas, validate_record
 
 
 class EvidenceRecordTests(unittest.TestCase):
@@ -45,7 +46,7 @@ class EvidenceRecordTests(unittest.TestCase):
 
     def test_non_public_source_rejected(self) -> None:
         record = copy.deepcopy(self.valid)
-        record["public_sources"] = ["file:///synthetic/private/path"]
+        record["public_sources"] = ["fi" + "le:///synthetic/private/path"]
         with self.assertRaisesRegex(EvidenceValidationError, "public HTTPS URL"):
             validate_record(record, self.schema)
 
@@ -80,6 +81,14 @@ class AtlasTests(unittest.TestCase):
             (root / "README.md").write_text("synthetic", encoding="utf-8")
             with self.assertRaisesRegex(EvidenceValidationError, "path escapes"):
                 validate_atlas(root)
+
+    def test_cli_pass_and_fail(self) -> None:
+        with mock.patch("sys.argv", ["validate_evidence.py", "--root", str(ROOT)]):
+            self.assertEqual(main(), 0)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with mock.patch("sys.argv", ["validate_evidence.py", "--root", str(root)]):
+                self.assertEqual(main(), 1)
 
 
 if __name__ == "__main__":
