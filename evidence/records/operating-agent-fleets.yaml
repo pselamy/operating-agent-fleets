@@ -4,6 +4,7 @@
   "evidence_class": "repository_artifact",
   "lineage": "primary",
   "verified_at": "2026-07-11",
+  "reverify_after_days": 14,
   "cutoff": "commit 0abd48c85c686c3ea321d14dcfbe901f7b9e6472",
   "public_sources": [
     "https://github.com/pselamy/operating-agent-fleets",

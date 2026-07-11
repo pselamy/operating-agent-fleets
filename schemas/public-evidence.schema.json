@@ -10,6 +10,7 @@
     "evidence_class",
     "lineage",
     "verified_at",
+    "reverify_after_days",
     "cutoff",
     "public_sources",
     "claims",
@@ -35,6 +36,7 @@
     },
     "lineage": {"enum": ["primary", "copied", "synthetic", "derived"]},
     "verified_at": {"type": "string", "format": "date"},
+    "reverify_after_days": {"type": "integer", "minimum": 1, "maximum": 365},
     "cutoff": {"type": "string", "minLength": 4},
     "public_sources": {
       "type": "array",

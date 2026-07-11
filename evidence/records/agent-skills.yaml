@@ -4,6 +4,7 @@
   "evidence_class": "repository_artifact",
   "lineage": "primary",
   "verified_at": "2026-07-11",
+  "reverify_after_days": 30,
   "cutoff": "commit 34155e92f33f11dd8e566eb0805c890b5234aec0 and quality run 29167720369",
   "public_sources": [
     "https://github.com/selamy-labs/agent-skills",

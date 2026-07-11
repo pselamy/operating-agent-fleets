@@ -70,6 +70,13 @@ def validate_record(record: object, schema: dict[str, object]) -> str:
     except (TypeError, ValueError) as exc:
         raise EvidenceValidationError("verified_at: expected an ISO 8601 calendar date") from exc
 
+    reverify_after_days = record["reverify_after_days"]
+    _expect(
+        isinstance(reverify_after_days, int) and not isinstance(reverify_after_days, bool),
+        "reverify_after_days: expected an integer",
+    )
+    _expect(1 <= reverify_after_days <= 365, "reverify_after_days: expected a value from 1 through 365")
+
     sources = _validate_strings(record, "public_sources", minimum=0)
     for source in sources:
         parsed = urlparse(source)

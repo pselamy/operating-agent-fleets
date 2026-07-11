@@ -4,6 +4,7 @@
   "evidence_class": "repository_artifact",
   "lineage": "derived",
   "verified_at": "2026-07-11",
+  "reverify_after_days": 7,
   "cutoff": "GitHub REST API queries completed at 2026-07-11T21:40:00Z",
   "public_sources": [
     "https://github.com/pselamy?tab=repositories",

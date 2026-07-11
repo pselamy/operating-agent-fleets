@@ -4,6 +4,7 @@
   "evidence_class": "live_behavior",
   "lineage": "primary",
   "verified_at": "2026-07-11",
+  "reverify_after_days": 7,
   "cutoff": "commit 2c47ad35cc1fca57c9821da18de2981292b67989 and successful deployment run 29167720166",
   "public_sources": [
     "https://github.com/pselamy/resume",

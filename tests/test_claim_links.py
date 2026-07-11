@@ -32,6 +32,7 @@ class ClaimLinkTests(unittest.TestCase):
                 "evidence_class": "repository_artifact",
                 "lineage": "synthetic",
                 "verified_at": "2026-07-11",
+                "reverify_after_days": 30,
                 "cutoff": "synthetic cutoff",
                 "public_sources": ["https://example.com/public"],
                 "claims": ["A synthetic public artifact exists for this test."],

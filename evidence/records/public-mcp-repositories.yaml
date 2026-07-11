@@ -4,6 +4,7 @@
   "evidence_class": "repository_artifact",
   "lineage": "primary",
   "verified_at": "2026-07-11",
+  "reverify_after_days": 30,
   "cutoff": "agent-mcp commit 5f7ebf7eb48dffb458db82b45517812859fdc79e and per-repository test runs listed in verification_method",
   "public_sources": [
     "https://github.com/selamy-labs/agent-mcp",

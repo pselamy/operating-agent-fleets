@@ -20,6 +20,7 @@ class EvidenceRecordTests(unittest.TestCase):
             "evidence_class": "repository_artifact",
             "lineage": "synthetic",
             "verified_at": "2026-07-11",
+            "reverify_after_days": 30,
             "cutoff": "commit example0001",
             "public_sources": ["https://example.com/public-artifact"],
             "claims": ["The synthetic artifact exists at the stated cutoff."],
@@ -49,6 +50,13 @@ class EvidenceRecordTests(unittest.TestCase):
         record["public_sources"] = ["fi" + "le:///synthetic/private/path"]
         with self.assertRaisesRegex(EvidenceValidationError, "public HTTPS URL"):
             validate_record(record, self.schema)
+
+    def test_reverification_window_must_be_bounded_integer(self) -> None:
+        for invalid in (True, 0, 366, "30"):
+            record = copy.deepcopy(self.valid)
+            record["reverify_after_days"] = invalid
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(EvidenceValidationError, "reverify_after_days"):
+                validate_record(record, self.schema)
 
     def test_internal_record_has_no_public_source(self) -> None:
         record = copy.deepcopy(self.valid)

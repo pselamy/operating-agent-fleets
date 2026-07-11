@@ -4,6 +4,7 @@
   "evidence_class": "repository_artifact",
   "lineage": "primary",
   "verified_at": "2026-07-11",
+  "reverify_after_days": 30,
   "cutoff": "commit 0b1c82133133ac7db526f53c55358f74e16a161d and test run 29076311552",
   "public_sources": [
     "https://github.com/selamy-labs/laneq",
