@@ -119,7 +119,11 @@ Least-privilege retrieval is only the first privacy boundary. Sensitive tool out
 
 _Figure 3.2 — Cross-plane collaboration is mediated by durable state and evidence. The sequence is a reference design, not a claim that the complete private topology is publicly verified._
 
-The public laneq implementation illustrates one such substrate. Its shared take operation begins an immediate SQLite transaction, selects the highest-priority eligible item in one lane, records a consumer and lease, and commits. Expired leases and explicit requeues return work to pending while incrementing a counter. CLI, MCP, and optional gRPC interfaces delegate to the same core behavior. These are repository-level facts; public evidence does not establish fleet deployment, workload volume, or exactly-once execution. [Inspect laneq](https://github.com/selamy-labs/laneq). [@evidence:artifact.laneq]
+The public laneq implementation illustrates one such substrate. Its shared take operation begins an immediate SQLite transaction, selects the highest-priority eligible item in one lane, records a consumer and lease, and commits. Reaping an observed expired or stale lease, and explicit requeue, return work to pending while incrementing a counter. CLI, MCP, and optional gRPC interfaces delegate to the same core behavior. These are repository-level facts; public evidence does not establish fleet deployment, workload volume, or exactly-once execution. [Inspect laneq](https://github.com/selamy-labs/laneq). [@evidence:artifact.laneq]
+
+![State machine showing a laneq directive begin pending, become taken with a consumer lease, renew that lease, return to pending when an expired or stale lease is reaped or after explicit requeue, defer until its time gate and dependencies are ready, move through parked state, and terminate as done or dropped.](../diagrams/chapter-03/laneq-lease-state-machine.light.svg)
+
+_Figure 3.3 — laneq's public lifecycle centers durable state and renewable ownership. The diagram describes repository behavior at the evidence cutoff, not a deployed fleet or exactly-once side effects._
 
 That distinction is central. Within one SQLite database, the implementation serializes eligible take operations through an immediate transaction. It does not prove that an external side effect happened once, that a worker obeyed priority, or that any private deployment is healthy. Those require idempotency, artifact evidence, runtime observation, and environment-specific controls.
 

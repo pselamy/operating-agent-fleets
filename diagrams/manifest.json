@@ -130,6 +130,31 @@
           "sha256": "270a62fa5dba614e30f170504cfed7f1598b5b6dee0bc7c7071b7f92b017766d"
         }
       ]
+    },
+    {
+      "id": "chapter-03.laneq-lease-state-machine",
+      "title": "laneq lease state machine",
+      "reader_question": "How does a laneq work item move through ownership, delay, recovery, durable hold, and terminal states?",
+      "evidence_cutoff": "commit 0b1c82133133ac7db526f53c55358f74e16a161d and test run 29076311552",
+      "claim_status": "verified_repository_behavior",
+      "source": "diagrams/chapter-03/laneq-lease-state-machine.mmd",
+      "source_sha256": "f663279f0c2513c873011a9779166161d12b2a9bf2a28711594c317c9ccb08fb",
+      "evidence_ids": ["artifact.laneq"],
+      "alt_text": "State machine showing a laneq directive begin pending, become taken with a consumer lease, renew that lease, return to pending when an expired or stale lease is reaped or after explicit requeue, defer until its time gate and dependencies are ready, move through parked state, and terminate as done or dropped.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "laneq-lease-state-machine-light",
+          "path": "diagrams/chapter-03/laneq-lease-state-machine.light.svg",
+          "sha256": "556c0e13a7af0ffe7bc834739ba63dd0f4695e68167f59f6e9cc1975b9c929b4"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "laneq-lease-state-machine-dark",
+          "path": "diagrams/chapter-03/laneq-lease-state-machine.dark.svg",
+          "sha256": "8b9f77ae9cc343db7d4c7413f87ae1ffb8bba4f20cacbd251db9ebc1d6ca05dd"
+        }
+      ]
     }
   ]
 }
