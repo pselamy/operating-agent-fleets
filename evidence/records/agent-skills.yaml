@@ -1,0 +1,39 @@
+{
+  "id": "artifact.public-agent-skills",
+  "title": "Public agent-skills library",
+  "evidence_class": "repository_artifact",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "cutoff": "commit 34155e92f33f11dd8e566eb0805c890b5234aec0 and quality run 29167720369",
+  "public_sources": [
+    "https://github.com/selamy-labs/agent-skills",
+    "https://github.com/selamy-labs/agent-skills/commit/34155e92f33f11dd8e566eb0805c890b5234aec0",
+    "https://github.com/selamy-labs/agent-skills/blob/34155e92f33f11dd8e566eb0805c890b5234aec0/.github/workflows/quality.yaml",
+    "https://github.com/selamy-labs/agent-skills/blob/34155e92f33f11dd8e566eb0805c890b5234aec0/.claude-plugin/marketplace.json",
+    "https://github.com/selamy-labs/agent-skills/actions/runs/29167720369",
+    "https://github.com/selamy-labs/agent-skills/actions/runs/29167720552",
+    "https://github.com/selamy-labs/agent-skills/releases/tag/v0.64.0"
+  ],
+  "claims": [
+    "The public MIT-licensed repository contained 97 independently named SKILL.md workflows at the cutoff.",
+    "The repository published a Claude Code marketplace manifest and documented a separate skills-CLI installation path for agents that consume SKILL.md files.",
+    "The cutoff quality workflow validated skill structure, public-safety and malicious-instruction patterns, public API stability, pull-request cancellation behavior, release planning, lint, tests, and at least 90 percent coverage for repository-owned tooling.",
+    "Quality and secret-scan workflows completed successfully for the cutoff commit, and public semantic-version releases existed through v0.64.0."
+  ],
+  "consumer": "Downstream consumer identity and installation count are not established by the public repository evidence.",
+  "outcome": "A versioned public distribution surface exists for reusable agent workflows; downstream operational impact remains unmeasured.",
+  "verification_method": [
+    "Counted SKILL.md files at the immutable cutoff commit.",
+    "Inspected the public README, marketplace manifest, quality workflow, and secret-scan workflow.",
+    "Verified successful quality and secret-scan runs for the cutoff commit.",
+    "Inspected the public GitHub release list and the v0.64.0 release artifact."
+  ],
+  "limitations": [
+    "Repository publication and installation instructions do not prove that a workload installed, invoked, or complied with any skill.",
+    "A green conformance or privacy check does not prove the semantic correctness of every instruction or the behavior of an agent that consumes it.",
+    "The skill count measures inventory, not usefulness, uniqueness, adoption, or operational impact.",
+    "The latest public release predates the cutoff commit, so current main-branch content is not asserted to be present in v0.64.0."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}
