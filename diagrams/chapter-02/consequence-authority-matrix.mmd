@@ -1,0 +1,34 @@
+%% Reader question: How should requested authority, human involvement, and required evidence change as consequence, irreversibility, and sensitivity increase?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: prescriptive reference design; no tax-case or private-deployment behavior is asserted
+flowchart TB
+    accTitle: Consequence-based authority matrix
+    accDescr: For each individual operation and immutable subject, assess reversibility, consequence surface, data sensitivity, and authority exercised. The selected tier is not permanent agent clearance, does not accumulate, and grants no blanket authority over later actions. Missing identity, provenance, scope, capability, expiry, retention, or rollback conditions stop the action before it begins. Public or low-sensitivity read-only and simulated work uses Tier zero. Tier one covers reversible local mutation or a restricted-data read only within an expiring least-privilege preapproval bounded by operation, source or target, purpose, scope, capability, retention, and rollback or revocation. Material mutation, restricted-data write or transmission, or a restricted read outside that preapproval requires a Tier two explicit human decision bound to the immutable subject. Legally binding filing or submission, identity-bound attestation, custody transfer, or another explicitly irreversible high-consequence act uses Tier three and remains human-performed. After any permitted operation, missing receipt or live verification marks the result unverified, blocks acceptance and downstream work, and triggers reconciliation or incident handling; it does not retroactively authorize or undo the action.
+
+    INPUT["Assess this operation + immutable subject<br/>Reversibility • consequence surface<br/>data sensitivity • authority exercised"]
+    PRE{"Pre-action contract complete?<br/>Caller and subject identity • provenance • purpose • scope<br/>capability • expiry • retention • rollback or stop conditions"}
+    PRESTOP["STOP BEFORE ACTION<br/>Narrow scope, obtain a decision,<br/>or create materially changed work"]
+    SELECT{"Highest applicable condition<br/>selects one tier"}
+
+    T0["Tier 0 — Observe and prepare<br/>Public/low-sensitivity read-only,<br/>simulated, or no external effect"]
+    T1["Tier 1 — Expiring preapproval<br/>Reversible local mutation, or restricted read within<br/>source/target + purpose + scope + capability<br/>+ retention + rollback/revocation"]
+    T2["Tier 2 — Explicit decision<br/>Material mutation; restricted write/transmission;<br/>or restricted read outside preapproval;<br/>approval bound to immutable subject"]
+    T3["Tier 3 — Human decisive act<br/>Legally binding filing/submission,<br/>identity-bound attestation, custody transfer,<br/>or explicitly irreversible high consequence"]
+
+    POST{"Required postcondition present?<br/>Source/result for Tier 0; artifact/rollback for Tier 1;<br/>decision/digest/live proof for Tier 2;<br/>receipt/observed state/reconciliation for Tier 3"}
+    ACCEPT["Accept evidence-backed outcome"]
+    UNVERIFIED["Mark outcome UNVERIFIED<br/>Block acceptance and downstream work<br/>Reconcile or open incident/repair work"]
+
+    INPUT --> PRE
+    PRE -->|"No"| PRESTOP
+    PRE -->|"Yes"| SELECT
+    SELECT -->|"public/low-sensitivity<br/>read-only or simulated"| T0
+    SELECT -->|"reversible local mutation or restricted read<br/>inside expiring least-privilege preapproval"| T1
+    SELECT -->|"material mutation, restricted write/transmission,<br/>or restricted read outside preapproval"| T2
+    SELECT -->|"legally/identity bound, custody,<br/>or explicitly irreversible"| T3
+    T0 --> POST
+    T1 --> POST
+    T2 --> POST
+    T3 --> POST
+    POST -->|"Yes"| ACCEPT
+    POST -->|"No"| UNVERIFIED

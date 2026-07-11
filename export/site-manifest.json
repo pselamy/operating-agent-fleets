@@ -14,6 +14,12 @@
       "media_type": "text/markdown"
     },
     {
+      "source": "guide/02-tax-and-authority.md",
+      "destination": "content/02-tax-and-authority.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
       "source": "guide/03-skills-and-context-routing.md",
       "destination": "content/03-skills-and-context-routing.md",
       "channel": "preview",
@@ -124,6 +130,18 @@
     {
       "source": "diagrams/chapter-01/two-coupled-loops.dark.svg",
       "destination": "static/agent-fleets/diagrams/chapter-01/two-coupled-loops.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-02/consequence-authority-matrix.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-02/consequence-authority-matrix.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-02/consequence-authority-matrix.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-02/consequence-authority-matrix.dark.svg",
       "channel": "preview",
       "media_type": "image/svg+xml"
     },
