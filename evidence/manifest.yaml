@@ -4,6 +4,7 @@
     "evidence/records/agent-skills.yaml",
     "evidence/records/laneq.yaml",
     "evidence/records/operating-agent-fleets.yaml",
+    "evidence/records/public-mcp-repositories.yaml",
     "evidence/records/resume-as-code.yaml"
   ]
 }

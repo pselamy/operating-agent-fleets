@@ -1,0 +1,44 @@
+{
+  "id": "artifact.public-mcp-repositories",
+  "title": "Public MCP repository and distribution set",
+  "evidence_class": "repository_artifact",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "cutoff": "agent-mcp commit 5f7ebf7eb48dffb458db82b45517812859fdc79e and per-repository test runs listed in verification_method",
+  "public_sources": [
+    "https://github.com/selamy-labs/agent-mcp",
+    "https://github.com/selamy-labs/agent-mcp/blob/5f7ebf7eb48dffb458db82b45517812859fdc79e/mcp-servers.json",
+    "https://github.com/selamy-labs/agent-mcp/blob/5f7ebf7eb48dffb458db82b45517812859fdc79e/.claude-plugin/marketplace.json",
+    "https://github.com/selamy-labs/agent-mcp/actions/runs/29163040022",
+    "https://github.com/selamy-labs/laneq/tree/v0.4.0",
+    "https://github.com/selamy-labs/reddit-mcp/tree/v0.1.0",
+    "https://github.com/selamy-labs/dispatch-mcp/tree/v0.1.0",
+    "https://github.com/selamy-labs/memory-mcp/tree/v0.1.0",
+    "https://github.com/selamy-labs/telemetry-mcp/tree/v0.2.0",
+    "https://github.com/selamy-labs/dns-mcp/tree/v0.1.0",
+    "https://github.com/selamy-labs/agent-mcp/issues/21"
+  ],
+  "claims": [
+    "The public MIT-licensed agent-mcp repository is a discovery and distribution aggregator whose machine-readable manifest defines seven named MCP configurations backed by six independently versioned public repositories.",
+    "At the cutoff, every aggregator entry was pinned to a public Git tag: laneq v0.4.0, reddit v0.1.0, dispatch v0.1.0, memory v0.1.0, telemetry and telemetry-emit v0.2.0, and DNS v0.1.0.",
+    "The aggregator quality workflow completed successfully at its cutoff commit, and each of the six referenced implementation repositories had a successful public test run on its then-current main branch.",
+    "The aggregator README was stale relative to the manifest at the cutoff; public issue 21 records the incorrect server count and obsolete telemetry note."
+  ],
+  "consumer": "Public downstream installation and workload identity are not established by this record.",
+  "outcome": "The public repositories provide inspectable, tag-pinned MCP discovery and installation surfaces; deployment and operational value remain unproven.",
+  "verification_method": [
+    "Parsed the immutable aggregator manifest and counted seven configuration names across six unique GitHub repositories.",
+    "Queried every referenced repository's public visibility, license metadata, and tags through the GitHub API.",
+    "Verified aggregator quality run 29163040022 completed successfully for commit 5f7ebf7eb48dffb458db82b45517812859fdc79e.",
+    "Verified successful current-main test runs: laneq 29076311552, reddit 29075815329, dispatch 29163362769, memory 29163218047, telemetry 29163159467, and DNS 29075837564.",
+    "Compared the immutable README with the manifest and filed public drift issue 21."
+  ],
+  "limitations": [
+    "A public repository, tag, and successful main-branch test do not prove that the exact tagged package is deployed by any workload.",
+    "This aggregate record verifies distribution metadata and repository-level checks, not every tool's runtime semantics, authorization boundary, or external-provider behavior.",
+    "The README disagreed with the machine manifest at the cutoff, so prose inventory claims must use the manifest until issue 21 is resolved and verified.",
+    "Repository and configuration counts measure inventory, not installation, invocation, reliability, security, or usefulness."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}
