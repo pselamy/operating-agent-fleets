@@ -1,0 +1,33 @@
+{
+  "id": "inventory.public-repositories-2026-07-11",
+  "title": "Dated public-repository inventory",
+  "evidence_class": "repository_artifact",
+  "lineage": "derived",
+  "verified_at": "2026-07-11",
+  "cutoff": "GitHub REST API queries completed at 2026-07-11T21:40:00Z",
+  "public_sources": [
+    "https://github.com/pselamy?tab=repositories",
+    "https://github.com/orgs/selamy-labs/repositories"
+  ],
+  "claims": [
+    "The GitHub public-repository APIs returned 59 repositories across the scoped owners at the cutoff: 47 under pselamy and 12 under selamy-labs.",
+    "The same snapshot contained 32 archived repositories, eight forks, and 25 repositories that were both non-archived and non-forks.",
+    "Twenty-one of the 59 public repositories reported a creation timestamp on or after 2026-03-01."
+  ],
+  "consumer": "Field-guide evidence atlas and public-work analysis",
+  "outcome": "A compact, source-controlled snapshot and reproducible query preserve the denominator and cutoff for repository-count claims.",
+  "verification_method": [
+    "Enumerated every public repository returned by the paginated GitHub REST API for user pselamy and organization selamy-labs.",
+    "Computed counts from API fields without classifying repository purpose, authorship, value, or agent involvement.",
+    "Stored the aggregate counts and the 25 non-archived non-fork repository identities in evidence/snapshots/public-repositories-2026-07-11.json.",
+    "Stored the exact query and derivation rules in evidence/queries/public-repository-inventory.md."
+  ],
+  "limitations": [
+    "Repository visibility, ownership, archival state, fork state, language detection, and counts can change after the cutoff.",
+    "The snapshot excludes private repositories by construction and must not be used to infer the size or topology of private operations.",
+    "A repository count does not measure usefulness, originality, adoption, maintained quality, attributed agent contribution, or outcome.",
+    "Created-at timestamps do not prove that all work in a repository was produced after that date or by an agent."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}
