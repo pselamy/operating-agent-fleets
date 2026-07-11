@@ -1,0 +1,33 @@
+%% Reader question: Which validation data flows belong to Bazel local execution, remote cache, Build Event Service, and optional remote execution?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference design; upstream BuildBuddy capability boundaries are verified, Patrick's private deployment and outcomes are not publicly reproducible
+flowchart TB
+    accTitle: BuildBuddy validation data flow
+    accDescr: An immutable source revision enters a credential-free Bazel validation job. Bazel runs eligible actions locally, queries a trust-scoped remote cache, and emits minimized build events to a separately controlled Build Event Service. Cache hits and local action results feed tests, whose result remains bound to the source SHA. Remote execution is a separate optional path requiring explicit authorization and configuration, not an implication of cache or event ingestion.
+
+    S["Immutable source SHA"] --> J["Credential-free CI validation job"]
+    J --> B["Bazel analysis and action graph"]
+
+    subgraph CACHE["Remote-cache path"]
+      Q{"Trust-scoped cache hit?"}
+      Q -->|"Yes"| C["Verified cached action result"]
+      Q -->|"No"| L["Local action execution"]
+      L --> W{"Trusted context may write?"}
+      W -->|"Yes"| RC["Remote cache namespace"]
+      W -->|"No"| N["Do not upload"]
+      RC --> C
+      L --> C
+    end
+
+    subgraph EVENTS["Build-event path"]
+      E["Minimized and redacted build events"] --> BES["BES result and diagnostic surface"]
+      BES --> O["Scoped read access, retention, deletion, and audit"]
+    end
+
+    B --> Q
+    B --> E
+    C --> T["Tests and validation gates"]
+    T --> R["Authoritative result bound to source SHA"]
+
+    B -. "separate explicit remote_executor path" .-> RE["Optional remote execution experiment"]
+    RE -. "not implied by cache or BES" .-> C

@@ -1,0 +1,33 @@
+%% Reader question: How can newer revisions supersede stale validation without interrupting an active mutation?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference design; laneq mechanics and BuildBuddy capability boundaries are verified, private fleet conformance is not publicly reproducible
+sequenceDiagram
+    accTitle: Lane-Scoped Supersession timeline
+    accDescr: Revision B arrives and supersedes waiting revision A. Revision B begins credential-free validation. Revision C then arrives, requests B's cancellation, waits for termination acknowledgement, and validates. In a separate serialized mutation lane, an earlier authorized mutation finishes before C's source SHA is resolved through provenance to an authorized artifact digest. That digest mutates next and the real target is verified against it.
+
+    participant S as Revision source
+    participant V as Validation lane<br/>no mutation credential
+    participant M as Serialized mutation lane
+    participant T as Real target
+    participant H as Durable history
+
+    S->>V: Revision A arrives and waits
+    S->>V: Revision B arrives
+    V->>H: Supersede waiting A with reason
+    V->>V: Start side-effect-free validation B
+    S->>V: Revision C arrives
+    V->>V: Request cancellation of B
+    V->>H: B acknowledges termination
+    V->>V: Validate source SHA C
+    V->>H: Record authoritative green for SHA C
+
+    Note over M,T: An active mutation is never canceled by a newer revision
+    M->>T: Earlier authorized digest is mutating
+    T-->>M: Mutation finishes
+    M->>H: Record verification of earlier digest
+    V->>M: SHA C plus trusted SHA-to-digest provenance
+    M->>M: Re-check policy and authorize digest D
+    M->>T: Mutate authorized digest D
+    T-->>M: Observed target identity and health
+    M->>H: Verify target against digest D
+
