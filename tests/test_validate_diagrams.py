@@ -11,7 +11,10 @@ from tools.validate_diagrams import DiagramValidationError, ROOT, digest, valida
 
 class DiagramValidationTests(unittest.TestCase):
     def test_repository_diagrams_validate(self) -> None:
-        self.assertEqual(validate_diagrams(), 10)
+        manifest = json.loads((ROOT / "diagrams" / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(validate_diagrams(), len(manifest["diagrams"]))
+        ids = {diagram["id"] for diagram in manifest["diagrams"]}
+        self.assertIn("chapter-07.agent-lifecycle-state-machine", ids)
 
     def fixture(self):
         directory = tempfile.TemporaryDirectory()
