@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "records": [
+    "evidence/records/agent-skills.yaml",
     "evidence/records/operating-agent-fleets.yaml",
     "evidence/records/resume-as-code.yaml"
   ]
