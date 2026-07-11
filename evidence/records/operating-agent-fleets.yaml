@@ -1,0 +1,33 @@
+{
+  "id": "artifact.operating-agent-fleets",
+  "title": "Operating Agent Fleets source and evidence repository",
+  "evidence_class": "repository_artifact",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "cutoff": "commit 0abd48c85c686c3ea321d14dcfbe901f7b9e6472",
+  "public_sources": [
+    "https://github.com/pselamy/operating-agent-fleets",
+    "https://github.com/pselamy/operating-agent-fleets/commits/0abd48c85c686c3ea321d14dcfbe901f7b9e6472",
+    "https://github.com/pselamy/operating-agent-fleets/pull/1"
+  ],
+  "claims": [
+    "The public Apache-2.0 repository is the versioned source and evidence home for the Operating Agent Fleets field guide.",
+    "The in-place rename preserved the initial Framework Seed commit and the repository history through this evidence cutoff.",
+    "Reeve's earlier public framing contribution remains preserved as open pull request 1 and was not represented as merged authorship."
+  ],
+  "consumer": "Field-guide contributors and readers",
+  "outcome": "The repository provides an inspectable public source, disclosure policy, evidence contract, and validation tools.",
+  "verification_method": [
+    "Queried current repository metadata through the GitHub API.",
+    "Compared the first and cutoff commits in the public commit history.",
+    "Followed the former repository URL and confirmed it resolves to the renamed repository.",
+    "Inspected the preserved public pull request metadata."
+  ],
+  "limitations": [
+    "Repository source and policy do not prove that any private operating system follows the documented behavior.",
+    "Commit and pull-request identity show public attribution but do not prove autonomous authorship or absence of human direction.",
+    "The canonical field-guide reading experience was not deployed at this cutoff."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}
