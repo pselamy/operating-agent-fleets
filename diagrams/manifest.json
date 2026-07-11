@@ -105,6 +105,31 @@
           "sha256": "330d6cc0653e13c458cecb38d5ebf0c51966d571f5cbff513f4fed27eb0cc658"
         }
       ]
+    },
+    {
+      "id": "chapter-06.memory-read-write-rebuild",
+      "title": "Memory read, write, and rebuild flow",
+      "reader_question": "How can semantic recall improve discovery while versioned sources retain authority and enable poisoning recovery?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-06/memory-read-write-rebuild.mmd",
+      "source_sha256": "219e256a2ecbbbfc0b9b1affe6983089bb649bf1e796b42889206082fc010fa8",
+      "evidence_ids": ["artifact.memory-mcp", "artifact.public-agent-skills"],
+      "alt_text": "Flowchart showing callers authenticate and receive readable scopes before memory reads prefer structured keys or use semantic search for discovery. Selected hits resolve to versioned authoritative records and missing provenance is rejected. Writes create or update the authoritative domain record before reviewed fleet promotion and indexing. Correction changes the source, writes a minimized authoritative tombstone consumed by every rebuild, verifies deletion propagation, rebuilds the index, and compares it with the source manifest.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "memory-read-write-rebuild-light",
+          "path": "diagrams/chapter-06/memory-read-write-rebuild.light.svg",
+          "sha256": "fca523d462fb7e5fbd0891aa28c171df91df4401121b883a963c536c9dbbe66d"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "memory-read-write-rebuild-dark",
+          "path": "diagrams/chapter-06/memory-read-write-rebuild.dark.svg",
+          "sha256": "270a62fa5dba614e30f170504cfed7f1598b5b6dee0bc7c7071b7f92b017766d"
+        }
+      ]
     }
   ]
 }
