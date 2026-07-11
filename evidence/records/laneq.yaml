@@ -1,0 +1,40 @@
+{
+  "id": "artifact.laneq",
+  "title": "laneq durable work queue",
+  "evidence_class": "repository_artifact",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "cutoff": "commit 0b1c82133133ac7db526f53c55358f74e16a161d and test run 29076311552",
+  "public_sources": [
+    "https://github.com/selamy-labs/laneq",
+    "https://github.com/selamy-labs/laneq/commit/0b1c82133133ac7db526f53c55358f74e16a161d",
+    "https://github.com/selamy-labs/laneq/blob/0b1c82133133ac7db526f53c55358f74e16a161d/src/laneq/core.py",
+    "https://github.com/selamy-labs/laneq/blob/0b1c82133133ac7db526f53c55358f74e16a161d/proto/laneq.proto",
+    "https://github.com/selamy-labs/laneq/blob/0b1c82133133ac7db526f53c55358f74e16a161d/.github/workflows/test.yml",
+    "https://github.com/selamy-labs/laneq/actions/runs/29076311552",
+    "https://github.com/selamy-labs/laneq/tree/v0.4.0"
+  ],
+  "claims": [
+    "The public MIT-licensed Python package stores durable work items in SQLite and orders pending work by P0, P1, and P2 priority with FIFO ordering inside a priority.",
+    "The shared take operation begins an immediate SQLite transaction, selects one eligible item in a lane, and records its consumer and lease before committing.",
+    "The lifecycle supports pending, taken, deferred, done, dropped, and parked states; expired leases and explicit requeue operations return work to pending while tracking requeue count.",
+    "CLI, MCP, and optional gRPC interfaces delegate queue behavior to the shared core module, and the cutoff test workflow completed successfully with a 95 percent coverage threshold.",
+    "Public Git tags existed through v0.4.0 at the cutoff."
+  ],
+  "consumer": "Public downstream deployment and workload identity are not established by this evidence record.",
+  "outcome": "The repository provides an inspectable lease-based queue implementation and typed integration surfaces; fleet-wide use and throughput impact are not inferred.",
+  "verification_method": [
+    "Inspected the immutable README, package metadata, core queue operations, protocol schema, MCP adapter, gRPC adapter, and lifecycle tests.",
+    "Traced the take path from shared core code through its immediate transaction, ordered selection, lease update, and commit.",
+    "Verified the cutoff test and secret-scan workflows completed successfully.",
+    "Queried public repository tags and confirmed v0.4.0 points to a public commit."
+  ],
+  "limitations": [
+    "Source and tests prove repository behavior at the cutoff, not that a private worker fleet deploys this revision or obeys its priority contract.",
+    "A SQLite immediate transaction supports single-database serialization; it does not establish distributed consensus, exactly-once execution, or peer-to-peer coordination.",
+    "The public repository does not expose workload volume, queue latency, recurrence, consumer identity, or production availability measurements.",
+    "The README's broader TIME-plane design includes future schema ideas that are not treated as current implementation claims."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}
