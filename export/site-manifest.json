@@ -110,6 +110,18 @@
       "media_type": "image/svg+xml"
     },
     {
+      "source": "diagrams/chapter-03/laneq-lease-state-machine.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-03/laneq-lease-state-machine.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-03/laneq-lease-state-machine.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-03/laneq-lease-state-machine.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
       "source": "diagrams/chapter-05/lane-scoped-supersession.light.svg",
       "destination": "static/agent-fleets/diagrams/chapter-05/lane-scoped-supersession.light.svg",
       "channel": "preview",

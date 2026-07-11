@@ -1,0 +1,20 @@
+%% Reader question: How does a laneq work item move through ownership, delay, recovery, durable hold, and terminal states?
+%% Evidence cutoff: commit 0b1c82133133ac7db526f53c55358f74e16a161d and test run 29076311552
+%% Claim status: verified public repository behavior; deployment and exactly-once effects are not established
+flowchart LR
+    accTitle: laneq lease state machine
+    accDescr: A pushed directive begins pending. An atomic take records a consumer and lease and moves it to taken. Touch renews the lease. Reaping an observed expired or stale lease and explicit requeue return work to pending and increment the requeue count. A deferred item returns to pending after its time gate is ready and named dependencies are terminal. Park moves a taken item to the parked state and unpark returns it to pending. Setting status to done or dropped creates terminal states. The generic status setter is permissive, so this depicts the normal claimed-work path rather than an enforced transition-authorization model.
+
+    START(("Start")) --> PUSH["push"] --> P["Pending"]
+    P --> TAKE["atomic take:<br/>record consumer and lease"] --> T["Taken"]
+    T --> TOUCH["touch:<br/>renew lease"] --> T
+    T --> REAP["reap observed expired<br/>or stale lease:<br/>requeue count +1"] --> P
+    T --> REQUEUE["explicit requeue:<br/>requeue count +1"] --> P
+    T --> DEFER["defer by time<br/>and/or dependency"] --> F["Deferred"]
+    F --> READY["time and<br/>dependencies ready"] --> P
+    T --> PARK["park"] --> K["Parked"]
+    K --> UNPARK["unpark"] --> P
+    T --> COMPLETE["set status: done"] --> D["Done"]
+    T --> ABANDON["set status: dropped"] --> X["Dropped"]
+    D --> END(("Terminal"))
+    X --> END
