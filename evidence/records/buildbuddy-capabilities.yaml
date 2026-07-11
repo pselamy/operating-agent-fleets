@@ -1,0 +1,37 @@
+{
+  "id": "documentation.buildbuddy-capabilities",
+  "title": "BuildBuddy capability boundaries",
+  "evidence_class": "documentation",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "reverify_after_days": 30,
+  "cutoff": "buildbuddy-io/buildbuddy commit 47bb9758331fc6488a787ccc7e4b72a07bc947f7",
+  "public_sources": [
+    "https://github.com/buildbuddy-io/buildbuddy/commit/47bb9758331fc6488a787ccc7e4b72a07bc947f7",
+    "https://github.com/buildbuddy-io/buildbuddy/blob/47bb9758331fc6488a787ccc7e4b72a07bc947f7/README.md",
+    "https://github.com/buildbuddy-io/buildbuddy/blob/47bb9758331fc6488a787ccc7e4b72a07bc947f7/docs/rbe-setup.md",
+    "https://github.com/buildbuddy-io/buildbuddy/blob/47bb9758331fc6488a787ccc7e4b72a07bc947f7/docs/guide-auth.md",
+    "https://github.com/buildbuddy-io/buildbuddy/blob/47bb9758331fc6488a787ccc7e4b72a07bc947f7/docs/troubleshooting-rbe.md"
+  ],
+  "claims": [
+    "BuildBuddy's public source describes separate Build Event Service, result-store, and remote-cache capabilities for Bazel invocations.",
+    "BuildBuddy's remote-execution setup requires Bazel's remote_executor configuration; configuring event upload or a remote cache alone does not establish remote execution.",
+    "BuildBuddy documents API-key authentication and a read-only key mode that disables remote-cache uploads.",
+    "BuildBuddy documents remote-cache timeout, unavailability, eviction, and local-state mismatch failure modes that an operating design must handle explicitly."
+  ],
+  "consumer": "Readers evaluating Bazel observability, cache reuse, and remote-execution claims",
+  "outcome": "The public documentation supports precise distinctions among Build Event Service observability, remote caching, and remote execution.",
+  "verification_method": [
+    "Inspected the README and capability descriptions at the immutable public commit.",
+    "Compared remote-cache and Build Event Service configuration with the separately documented remote_executor requirement.",
+    "Inspected authentication guidance and documented remote-cache failure modes."
+  ],
+  "limitations": [
+    "Vendor documentation establishes product interfaces and intended behavior, not that Patrick's repositories configure, exercise, or benefit from them.",
+    "This record contains no private BuildBuddy organization, invocation, credential, repository, performance, cost, or cache-hit evidence.",
+    "No quantified acceleration, availability, fleet conformance, or remote-execution deployment claim follows from this record.",
+    "The upstream repository uses a mixed licensing model; this record cites documentation and does not redistribute implementation source."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}

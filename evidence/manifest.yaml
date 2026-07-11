@@ -2,6 +2,7 @@
   "schema_version": 1,
   "records": [
     "evidence/records/agent-skills.yaml",
+    "evidence/records/buildbuddy-capabilities.yaml",
     "evidence/records/laneq.yaml",
     "evidence/records/operating-agent-fleets.yaml",
     "evidence/records/public-mcp-repositories.yaml",
