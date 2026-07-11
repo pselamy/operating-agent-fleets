@@ -1,0 +1,48 @@
+%% Reader question: How can semantic recall improve discovery while versioned sources retain authority and enable poisoning recovery?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference design; public memory-mcp repository mechanics are verified, end-to-end fleet enforcement and effectiveness are unverified
+flowchart LR
+    accTitle: Memory read, write, and rebuild flow
+    accDescr: A caller authenticates and receives readable scopes before a read tries a known structured key or uses semantic search to discover candidates. Selected hits must carry provenance and resolve to an authoritative versioned source before use. A write updates an authoritative domain record before review and optional fleet promotion, then indexes the immutable revision. A correction changes the source, commits a minimized authoritative tombstone consumed by every rebuild, verifies deletion propagation, rebuilds a fresh index, compares it with the source manifest, and atomically promotes the verified index.
+
+    subgraph READ["Read: discovery is not authority"]
+      direction TB
+      T["Caller identity and task"] --> AUTH["Authenticate and derive readable scopes"]
+      AUTH --> K{"Known structured key?"}
+      K -->|"Yes"| D["Deterministic source lookup"]
+      K -->|"No"| S["Semantic candidate search in approved scopes"]
+      S --> P{"Complete provenance and access?"}
+      P -->|"No"| Q["Reject or quarantine hit"]
+      P -->|"Yes"| A["Resolve immutable authoritative source"]
+      D --> A
+      A --> V["Verify revision, supersession, privacy, and cutoff"]
+      V --> U["Use source-backed context"]
+    end
+
+    subgraph WRITE["Write: source before derived index"]
+      direction TB
+      C["Sourced candidate learning"] --> X{"Durable and authorized?"}
+      X -->|"No"| E["Decline or keep ephemeral"]
+      X -->|"Yes"| W["Create or update authoritative domain record"]
+      W --> F{"Promote to fleet scope?"}
+      F -->|"No"| I["Index immutable domain revision"]
+      F -->|"Reviewed approval"| M["Create reviewed fleet-scoped record"]
+      M --> I
+      I --> Z["Verify source-to-index identity and digest"]
+    end
+
+    subgraph RECOVER["Correction and poisoning recovery"]
+      direction TB
+      B["Bad, stale, or overexposed memory"] --> N["Narrow retrieval and identify affected revisions"]
+      N --> R["Correct, supersede, quarantine, or delete source"]
+      R --> O["Commit minimized authoritative tombstone or revocation"]
+      O --> P2["Verify deletion propagation across supported surfaces"]
+      P2 --> G["Build fresh index from pinned sources plus active tombstones"]
+      G --> H["Compare source and index manifests; run isolation regressions"]
+      H --> J{"Zero unexplained drift?"}
+      J -->|"No"| G
+      J -->|"Yes"| Y["Atomically promote verified index"]
+    end
+
+    U -. "verified lesson candidate" .-> C
+    Z -. "later correction" .-> B
