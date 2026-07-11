@@ -1,0 +1,33 @@
+%% Reader question: How does a learning become a consumable constraint without assuming instant fleet-wide propagation?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference design; public distribution mechanics are verified, private adoption is not publicly reproducible
+flowchart TB
+    accTitle: Skill and knowledge propagation
+    accDescr: A learning becomes a candidate, is classified and reviewed, then released as a versioned local, internal, or public artifact. Each consumer adopts the version through a reviewed change and supplies loading and outcome evidence. A separate upstream path reviews and pins an existing public artifact instead of copying it.
+
+    O["Failure, friction, or useful observation"] --> C["Candidate learning with source and cutoff"]
+    C --> K{"Knowledge to read or capability to call?"}
+    K -->|"Knowledge"| G["Generalize procedure and remove private context"]
+    K -->|"Capability"| T["Specify a narrow typed tool boundary"]
+
+    G --> A{"Intended audience?"}
+    A -->|"One role"| L["Agent-local candidate"]
+    A -->|"Several trusted roles"| I["Internal-fleet candidate"]
+    A -->|"General public"| P["Public-fleet candidate"]
+
+    L --> R["Behavior examples, review, and version"]
+    I --> R
+    P --> R
+    T --> R
+
+    N["Need already served upstream?"] --> U["Review provenance, license, security, and utility"]
+    U --> V["Pin curated upstream version"]
+
+    R --> V2["Release versioned artifact"]
+    V --> D["Consumer upgrade through reviewable change"]
+    V2 --> D
+    D --> E["Evidence that consumer loaded or invoked it"]
+    E --> M["Measure recurrence, outcome, and steering cost"]
+    M -->|"Useful"| Q["Keep, refine, or promote"]
+    M -->|"No demonstrated value"| X["Narrow, deprecate, or delete"]
+    Q --> C
