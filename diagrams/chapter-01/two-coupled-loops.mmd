@@ -1,0 +1,32 @@
+%% Reader question: How do completed work and operational learning reinforce one another without silently changing authority?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: reference operating model; public artifacts illustrate selected stages, end-to-end private conformance is not publicly reproducible
+flowchart TB
+    accTitle: Work and system-learning loops
+    accDescr: The work loop turns a durable work item into capability and context routing, side-effect-free planning and validation, a consequence-based authority decision, authorized mutation or action, evidence and verification, and an integrated outcome. Human-gated work waits for a recorded decision and then returns for authority evaluation. Denied work stops and requires a new or materially changed work item. Evidence is a postcondition and never retroactive permission. The system-learning loop turns failures, friction, and observations into versioned constraints, tests and adversarial review, immutable rollout, live enforcement proof, and recurrence measurement. Only reviewed and proven constraints feed future routing.
+
+    subgraph W["Work loop"]
+        direction LR
+        A["Durable work item"] --> B["Capability and context routing"]
+        B --> C["Side-effect-free planning<br/>and validation"]
+        C --> D{"Consequence-based<br/>authority decision"}
+        D -->|"authorized"| U["Mutation or external action"]
+        D -->|"human decision required"| HWAIT["Wait for recorded human decision"]
+        HWAIT -->|"recorded decision"| D
+        D -->|"denied"| STOP["Stop; new or materially changed<br/>work item required"]
+        U --> E["Evidence and verification<br/>postcondition"]
+        E --> F["Integrated outcome"]
+    end
+
+    subgraph L["System-learning loop"]
+        direction LR
+        G["Failure, friction, or observation"] --> H["Versioned constraint"]
+        H --> I["Tests and adversarial review"]
+        I --> J["Immutable rollout"]
+        J --> K["Live enforcement proof"]
+        K --> M["Recurrence measurement"]
+    end
+
+    F --> G
+    M -->|"measured learning"| H
+    K -->|"proven constraint only"| B

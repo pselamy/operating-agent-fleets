@@ -8,6 +8,12 @@
       "media_type": "text/markdown"
     },
     {
+      "source": "guide/01-operating-model.md",
+      "destination": "content/01-operating-model.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
       "source": "guide/03-skills-and-context-routing.md",
       "destination": "content/03-skills-and-context-routing.md",
       "channel": "preview",
@@ -84,6 +90,42 @@
       "destination": "data/evidence/resume-as-code.json",
       "channel": "preview",
       "media_type": "application/json"
+    },
+    {
+      "source": "diagrams/chapter-01/system-context.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-01/system-context.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-01/system-context.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-01/system-context.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-01/container-trust-boundaries.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-01/container-trust-boundaries.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-01/container-trust-boundaries.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-01/container-trust-boundaries.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-01/two-coupled-loops.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-01/two-coupled-loops.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-01/two-coupled-loops.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-01/two-coupled-loops.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
     },
     {
       "source": "diagrams/chapter-03/mediated-collaboration.light.svg",

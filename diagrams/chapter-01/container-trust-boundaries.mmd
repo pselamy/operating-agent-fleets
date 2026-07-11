@@ -1,0 +1,75 @@
+%% Reader question: What identity, context, work, policy, capability, artifact, and evidence cross each boundary in the reference implementation?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: C4 container reference design using illustrative component categories; exact private topology, configuration, and enforcement are not publicly reproducible
+flowchart TB
+    accTitle: Container view and boundary-crossing data
+    accDescr: An operator sends intent and human decisions to a local agent client. A mediated access component receives caller identity and a bounded context request. Persistent domain agents and temporary execution workers are separate runtime principals. A queue receives work identity and lease state. Version control and delivery receive source revisions and artifacts. Memory returns authorized source identity, cutoff, and bounded content. An authorization policy produces an allow, deny, or human-gate decision; a separate credential issuer returns a short-lived capability reference only after approval. External calls carry the authorized operation and capability. Telemetry receives revision, artifact, work, and observed-outcome identity and creates evidence-backed repair work. These are distinct functional and authorization boundaries, not one shared trust zone.
+
+    O["Person: Operator"]
+
+    subgraph SYS["System: Operating agent system"]
+    subgraph LOCAL["Boundary: Operator-controlled client"]
+      C["Container: Local agent client"]
+    end
+
+    subgraph ACCESS["Boundary: Mediated access"]
+      A["Container: Context and dispatch mediator"]
+    end
+
+    subgraph DOMAIN["Boundary: Persistent role principal"]
+      D["Container: Domain-agent service"]
+    end
+
+    subgraph WORKER["Boundary: Temporary worker principal"]
+      W["Container: Execution worker"]
+    end
+
+    subgraph QUEUE["Boundary: Durable work state"]
+      Q["Container: Lease-based work queue"]
+    end
+
+    subgraph VERSIONED["Boundary: Versioned source and delivery"]
+      G["Container: Repositories, review, CI, and declarative rollout"]
+    end
+
+    subgraph MEMORY["Boundary: Scoped knowledge"]
+      M["Container: Authoritative records and rebuildable recall"]
+    end
+
+    subgraph POLICY["Boundary: Authorization policy"]
+      P["Container: Consequence and scope evaluator"]
+    end
+
+    subgraph CREDENTIAL["Boundary: Credential custody"]
+      I["Container: Scoped capability issuer"]
+    end
+
+    subgraph EVIDENCE["Boundary: Evidence and telemetry"]
+      T["Container: Tests, traces, checks, and live probes"]
+    end
+    end
+
+    E["External system: System of record or action target"]
+
+    O -->|"intent + human decision"| C
+    C -->|"caller identity + bounded context request"| A
+    A -->|"scoped request + evidence requirement"| D
+    A -->|"bounded task + evidence requirement"| W
+    D -->|"work identity + lease operation"| Q
+    W -->|"work identity + lease operation"| Q
+    D -->|"source revision or proposed change"| G
+    W -->|"artifact + source revision"| G
+    D <-->|"authorized source ID + cutoff + bounded content"| M
+    D -->|"operation + consequence + target + artifact identity"| P
+    W -->|"operation + consequence + target + artifact identity"| P
+    P -->|"allow, deny, or human-gate decision"| D
+    P -->|"allow, deny, or human-gate decision"| W
+    P -->|"approved scope + immutable subject"| I
+    I -->|"short-lived capability reference"| D
+    I -->|"short-lived capability reference"| W
+    D -->|"authorized operation + capability"| E
+    W -->|"authorized operation + capability"| E
+    G -->|"revision + artifact + check identity"| T
+    Q -->|"work + lease identity"| T
+    E -->|"observed outcome identity"| T
+    T -->|"evidence pointer + repair intent"| Q
