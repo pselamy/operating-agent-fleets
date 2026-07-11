@@ -1,0 +1,39 @@
+{
+  "id": "artifact.resume-as-code",
+  "title": "Resume as code",
+  "evidence_class": "live_behavior",
+  "lineage": "primary",
+  "verified_at": "2026-07-11",
+  "cutoff": "commit 2c47ad35cc1fca57c9821da18de2981292b67989 and successful deployment run 29167720166",
+  "public_sources": [
+    "https://github.com/pselamy/resume",
+    "https://github.com/pselamy/resume/commit/2c47ad35cc1fca57c9821da18de2981292b67989",
+    "https://github.com/pselamy/resume/blob/2c47ad35cc1fca57c9821da18de2981292b67989/.github/workflows/deploy.yml",
+    "https://github.com/pselamy/resume/blob/2c47ad35cc1fca57c9821da18de2981292b67989/web/test_resumes.py",
+    "https://github.com/pselamy/resume/actions/runs/29167720166",
+    "https://selamy.dev/resume/"
+  ],
+  "claims": [
+    "One public LaTeX source tree combines shared sections with role-specific variant files and publishes generated PDF resumes.",
+    "At the cutoff, the repository, build workflow, and live index each contained the same 59 named resume variants.",
+    "The successful cutoff workflow compiled every declared variant, ran artifact-level PDF smoke tests, assembled the index, and deployed GitHub Pages.",
+    "GitHub attributed 39 of the repository's 73 commits at the cutoff to the reeve-claw account and 34 to the pselamy account."
+  ],
+  "consumer": "Patrick's public career-material workflow",
+  "outcome": "The live public index served 59 distinct downloadable PDF variants generated from the versioned source at the cutoff.",
+  "verification_method": [
+    "Counted variant source files in the cutoff repository tree.",
+    "Counted variant inputs declared by the cutoff deployment workflow.",
+    "Opened the live index and counted distinct PDF targets.",
+    "Verified the cutoff GitHub Actions run completed successfully for the recorded commit.",
+    "Inspected the artifact smoke test and grouped public GitHub API commit attribution by linked account."
+  ],
+  "limitations": [
+    "A successful build and live PDF prove artifact production, not ATS ranking, application use, interview conversion, or employment impact.",
+    "GitHub account attribution does not prove autonomous authorship, the absence of human direction, or the relative size of each contribution.",
+    "The smoke test checks page count, required contact text, selected forbidden text, and unresolved placeholders; it does not validate every factual statement or visual rendering detail.",
+    "The live index is mutable after the cutoff and must be re-verified before making a current-count claim."
+  ],
+  "sensitivity": "public",
+  "status": "verified"
+}
