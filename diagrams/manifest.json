@@ -155,6 +155,81 @@
           "sha256": "8b9f77ae9cc343db7d4c7413f87ae1ffb8bba4f20cacbd251db9ebc1d6ca05dd"
         }
       ]
+    },
+    {
+      "id": "chapter-01.system-context",
+      "title": "Operating agent system context",
+      "reader_question": "Who uses the operating agent system, which neighboring systems does it call, and where does consequential authority remain?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-01/system-context.mmd",
+      "source_sha256": "af5808098bf427e2d99d730c26cad1bb2fcce78f932250ab6a59fce0d3c4724c",
+      "evidence_ids": ["artifact.laneq", "artifact.public-agent-skills", "artifact.public-mcp-repositories", "artifact.memory-mcp"],
+      "alt_text": "C4 system-context diagram showing an operator use one operating agent system, which returns evidence and outcomes and sends authorized requests to external systems of record and action. Source, delivery, knowledge, agent, worker, policy, credential, and verification components remain internal and are deferred to the container view.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "system-context-light",
+          "path": "diagrams/chapter-01/system-context.light.svg",
+          "sha256": "ad23450a56e5bc1d5e99f03eb63baa10a74365a5ca044918282183f2e0899def"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "system-context-dark",
+          "path": "diagrams/chapter-01/system-context.dark.svg",
+          "sha256": "ffc4da9977828ff79c9c2193b6a9a4bb012eae507bd9a54aa02ef27b25739c4e"
+        }
+      ]
+    },
+    {
+      "id": "chapter-01.container-trust-boundaries",
+      "title": "Container view with trust boundaries",
+      "reader_question": "What identity, context, work, policy, capability, artifact, and evidence cross each boundary in the reference implementation?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-01/container-trust-boundaries.mmd",
+      "source_sha256": "1638037b01f36569d4eb3e405a057c244d7e25a6645a9e2c6c7605c2cc099e14",
+      "evidence_ids": ["artifact.laneq", "artifact.public-agent-skills", "artifact.public-mcp-repositories", "artifact.memory-mcp"],
+      "alt_text": "C4 container diagram showing separate boundaries for a local client, mediated access, a persistent agent principal, a temporary worker principal, durable work state, versioned source and delivery, scoped knowledge, authorization policy, credential custody, evidence and telemetry, and an external action target. Arrows label the caller identity, bounded context, work and lease identity, source revision, authorization decision, short-lived capability reference, external operation, and evidence crossing those boundaries.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "container-trust-boundaries-light",
+          "path": "diagrams/chapter-01/container-trust-boundaries.light.svg",
+          "sha256": "325d5fa9285384bb8bcd3fc5dcff863e2765dc29a1bae24d7ef46dcdc7eb6ed1"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "container-trust-boundaries-dark",
+          "path": "diagrams/chapter-01/container-trust-boundaries.dark.svg",
+          "sha256": "d67ebd1ee97e6fbfbf6ff64dc3b72afd911309a78a4a535f2af061ad5113a491"
+        }
+      ]
+    },
+    {
+      "id": "chapter-01.two-coupled-loops",
+      "title": "Work and system-learning loops",
+      "reader_question": "How do completed work and operational learning reinforce one another without silently changing authority?",
+      "evidence_cutoff": "2026-07-11",
+      "claim_status": "reference_design",
+      "source": "diagrams/chapter-01/two-coupled-loops.mmd",
+      "source_sha256": "9e987b4a622f9597f4a0a9d627e2a1d6f1b599c2248ed4b10eb16670ce962a4c",
+      "evidence_ids": ["artifact.laneq", "artifact.public-agent-skills", "artifact.operating-agent-fleets"],
+      "alt_text": "Flowchart showing a work loop from durable work through routing, side-effect-free planning and validation, a consequence-based authority decision, authorized mutation or action, evidence as a postcondition, and integrated outcome. Human-gated work waits for a recorded decision and returns for evaluation; denied work stops until a new or materially changed work item exists. The outcome feeds a system-learning loop from observation through a versioned constraint, tests and adversarial review, immutable rollout, live enforcement proof, and recurrence measurement. Only proven constraints feed future routing.",
+      "exports": [
+        {
+          "theme": "light",
+          "svg_id": "two-coupled-loops-light",
+          "path": "diagrams/chapter-01/two-coupled-loops.light.svg",
+          "sha256": "12b1685724896595b1850ddcf7deb5c4db20b265acb3fda7d0316a17a63266cc"
+        },
+        {
+          "theme": "dark",
+          "svg_id": "two-coupled-loops-dark",
+          "path": "diagrams/chapter-01/two-coupled-loops.dark.svg",
+          "sha256": "807f972f9c004acda971bc233189585fd478bfa00859eaf2351af6e6c78ea716"
+        }
+      ]
     }
   ]
 }

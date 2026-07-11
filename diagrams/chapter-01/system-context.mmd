@@ -1,0 +1,15 @@
+%% Reader question: Who uses the operating agent system, which neighboring systems does it call, and where does consequential authority remain?
+%% Evidence cutoff: 2026-07-11
+%% Claim status: C4 system-context reference design; the system boundary and relationships are proposed vocabulary, not a private deployment claim
+flowchart LR
+    accTitle: Operating agent system context
+    accDescr: An operator gives intent, judgment, authentication, and consequential approval to one operating agent system. The system turns bounded work into evidence-backed outcomes and operational observations into reviewed constraints. It sends scoped requests to external systems of record and action and returns evidence, exceptions, and outcomes to the operator. Source, delivery, durable knowledge, agent, worker, queue, policy, credential, and verification components are internal and deliberately deferred to the container view.
+
+    O["Person: Operator<br/>Intent, judgment, authentication,<br/>and consequential approval"]
+    S["System: Operating agent system<br/>Turns bounded work into evidence-backed outcomes<br/>and observations into reviewed constraints"]
+    R["External system: Systems of record and action<br/>APIs, services, filing systems, deployment targets,<br/>and communication surfaces"]
+
+    O -->|"bounded intent and human decisions"| S
+    S -->|"evidence, exceptions, and outcomes"| O
+    S -->|"authorized request bound to approved scope"| R
+    O -. "human authentication or attestation when required" .-> R
