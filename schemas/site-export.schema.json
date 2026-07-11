@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pselamy/operating-agent-fleets/schemas/site-export.schema.json",
+  "title": "Operating Agent Fleets site export manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "destination", "channel", "media_type"],
+        "properties": {
+          "source": {"type": "string", "minLength": 1},
+          "destination": {"type": "string", "minLength": 1},
+          "channel": {"enum": ["preview", "release"]},
+          "media_type": {"enum": ["text/markdown", "application/json", "image/svg+xml", "image/png"]}
+        }
+      }
+    }
+  }
+}

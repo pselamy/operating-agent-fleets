@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "source": "guide/README.md",
+      "destination": "content/_index.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
+      "source": "guide/03-skills-and-context-routing.md",
+      "destination": "content/03-skills-and-context-routing.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
+      "source": "docs/disclosure-policy.md",
+      "destination": "content/disclosure-policy.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
+      "source": "evidence/manifest.yaml",
+      "destination": "data/evidence/manifest.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/agent-skills.yaml",
+      "destination": "data/evidence/agent-skills.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/laneq.yaml",
+      "destination": "data/evidence/laneq.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/operating-agent-fleets.yaml",
+      "destination": "data/evidence/operating-agent-fleets.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/public-mcp-repositories.yaml",
+      "destination": "data/evidence/public-mcp-repositories.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/public-repository-inventory.yaml",
+      "destination": "data/evidence/public-repository-inventory.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "evidence/records/resume-as-code.yaml",
+      "destination": "data/evidence/resume-as-code.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    }
+  ]
+}
