@@ -1,45 +1,34 @@
-# framework-seed
+# Operating Agent Fleets
 
-A discipline for running autonomous agents that don't lie about being done.
+**A Field Guide to Durable Work, Bounded Authority, and Systems That Learn**
 
-Most "agent framework" content sells plumbing: routing, tools, memory stores. The hard part isn't plumbing. It's stopping a worker from confidently reporting success it can't prove, and not losing what it learned the next time it restarts.
+This repository is the public source and evidence home for a living field guide about operating durable agent systems. Its central thesis is:
 
-This repo is the public methodology for that, plus (in progress) an installable kit to enforce it.
+> A durable agent system turns work into evidence and operational experience into versioned constraints while keeping authority proportional to consequence.
 
-Related public work: [selamy.dev](https://selamy.dev), Patrick's [GitHub profile](https://github.com/pselamy), and the public [agent-skills](https://github.com/selamy-labs/agent-skills) library.
+The guide is organized around two coupled loops:
 
-## The core idea
+1. **Work loop:** durable work item → capability and context routing → execution → consequence-based authority → evidence and verification → integrated outcome.
+2. **System-learning loop:** failure, friction, or observation → versioned constraint → tests and adversarial review → immutable rollout → live enforcement proof → recurrence measurement.
 
-Three things keep an autonomous fleet trustworthy:
+## Start here
 
-1. **"Done" means proven**: evidence at the real artifact, not a flipped checkbox or a green pipeline.
-2. **Knowledge compounds**: one fact, one file, one index; captured once, routed to a home, not stuck in a chat log.
-3. **Changes are reproducible and reversible**: declarative infra, runtime knobs over restarts, every incident becomes a permanent guard.
+- [Guide map](guide/README.md)
+- [The original handbook](HANDBOOK.md)
+- [Public site](https://selamy.dev)
+- [Public agent skills](https://github.com/selamy-labs/agent-skills)
+- [laneq](https://github.com/selamy-labs/laneq)
 
-The differentiator is the **enforcement layer**: hooks the harness runs so the rules can't be skipped, a priority queue the worker can't quietly reprioritize, and a regression ratchet that turns each failure into a test. Principles in a prompt are advisory. Hooks are not.
+Only public-safe material belongs here. Private operating repositories, raw transcripts, private infrastructure topology, credentials, financial identifiers, wallet or position data, and restricted source locators are excluded even when they support a public claim. Public claims will be connected to sanitized lineage records as the evidence atlas is built.
 
-## What's here today
+## Project status
 
-- **`HANDBOOK.md`**: nine principles, each stated so you can adopt it without this tooling. This is the whole methodology and it's usable as-is.
+The field guide is under construction. Chapter files currently define scope, evidence requirements, and safety boundaries; they are not finished chapters. Proposed mechanisms are labeled as proposals until a deployed artifact or live behavior verifies them.
 
-## What's coming
+## Provenance and credit
 
-An installable Claude Code plugin that enforces the handbook:
-
-- **done-guard**: block a "mark done" with no artifact evidence.
-- **reprioritize-guard**: workers can't demote queue priority; "blocked" is a status, not a lower priority.
-- **PR-hygiene**: one PR per unit, auto-merge at creation, "merged" (not "opened") counts as evidence.
-- A `CLAUDE.md` template and a self-drive loop with a watchdog.
-
-This builds on the existing ecosystem rather than reinventing it: [`prime-radiant-inc/iterative-development`](https://github.com/prime-radiant-inc/iterative-development) (Apache-2.0; same completion-is-evidence principle, plus paired adversarial review) and the [`superpowers`](https://github.com/obra/superpowers) plugin set. The queue is the public [`laneq`](https://github.com/selamy-labs/laneq) (lease-based, priority-ordered). We add the enforcement pieces those don't have.
-
-The kit is not built yet. Until it ships, treat this as a handbook.
-
-## Design constraints
-
-- **Installable and version-pinned, not a scaffold you fork.** A maintained plugin you pin to beats another stale generator that drifts and locks you to one vendor.
-- **Pattern-only.** Ideas drawn from public, proven sources; no code copied from proprietary projects.
+This project preserves the history of **Framework Seed** and its nine-principle [handbook](HANDBOOK.md). Reeve's preserved pull request [#1](https://github.com/pselamy/operating-agent-fleets/pull/1) helped sharpen the earlier framing around proof of work, knowledge as files, enforcement hooks, and links among public artifacts. That contribution is being superseded by the broader field-guide structure rather than merged verbatim because its branch now conflicts with the evolved source.
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE). Matches the ecosystem this builds on, so adopt, fork, and contribute back freely.
+Apache-2.0. See [LICENSE](LICENSE).
