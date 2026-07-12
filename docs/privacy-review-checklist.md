@@ -5,7 +5,7 @@ Record the artifact, immutable revision, reviewer, review date, and result. A re
 ## Automated preflight
 
 - [ ] Secret and privacy scanner passes on the full diff and generated artifacts.
-- [ ] `python3 tools/privacy_history_scan.py` passes over every reachable blob, commit, annotated tag, and historical path from `--all`; record the exact audited revision and result.
+- [ ] `python3 tools/privacy_history_scan.py --verify-remote origin` passes over every reachable blob, commit, annotated tag, and historical path from fetched non-shallow refs after proving local branch/tag refs match the remote; record the exact audited revision and result.
 - [ ] Link checker finds no private, authenticated, local, or expiring locator.
 - [ ] Images, SVG source, alt text, metadata, workflow logs, and downloadable artifacts were included in the scan.
 

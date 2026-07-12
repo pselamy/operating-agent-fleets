@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import io
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
-from tools.privacy_history_scan import main, reachable_objects, scan_history
+from tools.privacy_history_scan import main, reachable_objects, scan_history, verify_remote_refs
 
 
 class PrivacyHistoryScanTests(unittest.TestCase):
@@ -42,7 +43,7 @@ class PrivacyHistoryScanTests(unittest.TestCase):
         self.commit(root, "remove candidate")
         findings = scan_history(root).findings
         self.assertEqual([finding.rule for finding in findings], ["Ethereum address"])
-        self.assertEqual(findings[0].path, "candidate.txt")
+        self.assertIsNone(findings[0].path_digest)
 
     def test_restricted_commit_message_fails(self) -> None:
         root = self.repository()
@@ -64,6 +65,75 @@ class PrivacyHistoryScanTests(unittest.TestCase):
         ).stdout.strip()
         self.assertEqual(scan_history(root, revisions=(head,)).findings, ())
 
+    def test_shallow_repository_fails_closed(self) -> None:
+        source = self.repository()
+        candidate = source / "public.md"
+        candidate.write_text("first\n", encoding="utf-8")
+        self.commit(source)
+        candidate.write_text("second\n", encoding="utf-8")
+        self.commit(source)
+        clone_parent = tempfile.TemporaryDirectory()
+        self.addCleanup(clone_parent.cleanup)
+        clone = Path(clone_parent.name) / "clone"
+        subprocess.run(
+            ["git", "clone", "-q", "--depth", "1", source.as_uri(), str(clone)],
+            check=True,
+        )
+        with self.assertRaisesRegex(ValueError, "repository is shallow"):
+            scan_history(clone)
+
+    def test_remote_ref_verification_detects_unfetched_work(self) -> None:
+        source = self.repository()
+        candidate = source / "public.md"
+        candidate.write_text("first\n", encoding="utf-8")
+        self.commit(source)
+        clone_parent = tempfile.TemporaryDirectory()
+        self.addCleanup(clone_parent.cleanup)
+        clone = Path(clone_parent.name) / "clone"
+        subprocess.run(["git", "clone", "-q", source.as_uri(), str(clone)], check=True)
+        self.assertEqual(len(verify_remote_refs(clone, "origin")), 1)
+        candidate.write_text("second\n", encoding="utf-8")
+        self.commit(source)
+        with self.assertRaisesRegex(ValueError, "stale relative to remote"):
+            verify_remote_refs(clone, "origin")
+
+    def test_same_blob_under_restricted_historical_path_is_found_and_redacted(self) -> None:
+        root = self.repository()
+        safe = root / "aaa.txt"
+        safe.write_text("same safe payload\n", encoding="utf-8")
+        self.commit(root)
+        restricted_name = "service" + ".internal.txt"
+        safe.rename(root / restricted_name)
+        self.commit(root, "rename synthetic fixture")
+        findings = scan_history(root).findings
+        path_findings = [finding for finding in findings if finding.object_type == "path"]
+        self.assertEqual([finding.rule for finding in path_findings], ["private hostname"])
+        self.assertIsNotNone(path_findings[0].path_digest)
+        stderr = io.StringIO()
+        with mock.patch("sys.argv", ["privacy_history_scan.py", "--root", str(root)]), mock.patch("sys.stderr", stderr):
+            self.assertEqual(main(), 1)
+        self.assertNotIn(restricted_name, stderr.getvalue())
+        self.assertIn("historical-path sha256=", stderr.getvalue())
+
+    def test_annotated_tag_payload_is_scanned(self) -> None:
+        root = self.repository()
+        (root / "public.md").write_text("safe\n", encoding="utf-8")
+        self.commit(root)
+        synthetic = "gh" + "p_" + "A" * 24
+        subprocess.run(["git", "tag", "-a", "synthetic", "-m", synthetic], cwd=root, check=True)
+        findings = scan_history(root).findings
+        self.assertIn(("tag", "GitHub credential"), [(item.object_type, item.rule) for item in findings])
+
+    def test_lossless_binary_scan_and_partial_clone_guard(self) -> None:
+        root = self.repository()
+        candidate = root / "candidate.bin"
+        candidate.write_bytes(b"\xff\x00" + b"0x" + b"a1" * 20)
+        self.commit(root)
+        self.assertIn("Ethereum address", [item.rule for item in scan_history(root).findings])
+        subprocess.run(["git", "config", "remote.origin.promisor", "true"], cwd=root, check=True)
+        with self.assertRaisesRegex(ValueError, "partial/promisor"):
+            scan_history(root)
+
     def test_oversized_object_and_invalid_limit_fail_closed(self) -> None:
         root = self.repository()
         (root / "public.md").write_text("safe\n", encoding="utf-8")
@@ -84,6 +154,8 @@ class PrivacyHistoryScanTests(unittest.TestCase):
         with mock.patch("sys.argv", ["privacy_history_scan.py", "--root", str(root)]):
             self.assertEqual(main(), 1)
         with mock.patch("sys.argv", ["privacy_history_scan.py", "--root", str(root), "--max-object-bytes", "0"]):
+            self.assertEqual(main(), 2)
+        with mock.patch("sys.argv", ["privacy_history_scan.py", "--root", str(root), "--verify-remote=-bad"]):
             self.assertEqual(main(), 2)
 
 

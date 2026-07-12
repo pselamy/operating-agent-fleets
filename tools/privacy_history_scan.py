@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -24,7 +25,7 @@ DEFAULT_MAX_OBJECT_BYTES = 10 * 1024 * 1024
 class HistoricalFinding:
     object_id: str
     object_type: str
-    path: str | None
+    path_digest: str | None
     line: int
     rule: str
 
@@ -32,6 +33,7 @@ class HistoricalFinding:
 @dataclass(frozen=True)
 class HistoryScanResult:
     objects_scanned: int
+    paths_scanned: int
     bytes_scanned: int
     findings: tuple[HistoricalFinding, ...]
 
@@ -45,24 +47,99 @@ def _git(root: Path, *args: str, input_bytes: bytes | None = None) -> bytes:
         check=False,
     )
     if result.returncode != 0:
-        detail = result.stderr.decode("utf-8", errors="replace").strip()
-        raise ValueError(f"git {' '.join(args)} failed: {detail or 'unknown error'}")
+        operation = args[0] if args else "operation"
+        raise ValueError(f"git {operation} failed with exit status {result.returncode}")
     return result.stdout
 
 
-def reachable_objects(root: Path, revisions: tuple[str, ...] = ("--all",)) -> list[tuple[str, str | None]]:
+def _ensure_complete_repository(root: Path, revisions: tuple[str, ...]) -> None:
+    shallow = _git(root, "rev-parse", "--is-shallow-repository").decode("ascii").strip()
+    if shallow != "false":
+        raise ValueError("repository is shallow; complete reachable history cannot be established")
+    config = subprocess.run(
+        ["git", "config", "--get-regexp", r"^(extensions\.partialClone|remote\..*\.promisor)$"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
+    if config.returncode not in {0, 1}:
+        raise ValueError("cannot determine partial-clone configuration")
+    if config.returncode == 0 and config.stdout.strip():
+        raise ValueError("repository uses partial/promisor cloning; complete history cannot be established")
+    missing = _git(root, "rev-list", "--objects", "--missing=print", *revisions)
+    if any(line.startswith(b"?") for line in missing.splitlines()):
+        raise ValueError("reachable Git objects are missing locally")
+    _git(root, "fsck", "--connectivity-only", "--no-dangling")
+
+
+def reachable_objects(root: Path, revisions: tuple[str, ...] = ("--all",)) -> list[str]:
+    _ensure_complete_repository(root, revisions)
     output = _git(root, "rev-list", "--objects", *revisions)
-    objects: list[tuple[str, str | None]] = []
+    objects: list[str] = []
     seen: set[str] = set()
     for raw_line in output.decode("utf-8", errors="strict").splitlines():
-        object_id, separator, path = raw_line.partition(" ")
+        object_id = raw_line.partition(" ")[0]
         if object_id in seen:
             continue
         seen.add(object_id)
-        objects.append((object_id, path if separator else None))
+        objects.append(object_id)
     if not objects:
         raise ValueError("revision set contains no reachable objects")
     return objects
+
+
+def historical_paths(root: Path, revisions: tuple[str, ...]) -> list[tuple[str, str]]:
+    commits = _git(root, "rev-list", *revisions).decode("ascii", errors="strict").splitlines()
+    seen: set[str] = set()
+    paths: list[tuple[str, str]] = []
+    for commit_id in commits:
+        output = _git(
+            root,
+            "diff-tree",
+            "--root",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            "-z",
+            commit_id,
+        )
+        for raw_path in output.split(b"\0"):
+            if not raw_path:
+                continue
+            path = raw_path.decode("utf-8", errors="surrogateescape")
+            if path in seen:
+                continue
+            seen.add(path)
+            paths.append((commit_id, path))
+    return paths
+
+
+def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
+    if not remote or remote.startswith("-"):
+        raise ValueError("remote name is invalid")
+    output = _git(root, "ls-remote", "--heads", "--tags", remote)
+    expected: dict[str, str] = {}
+    for line in output.decode("ascii", errors="strict").splitlines():
+        object_id, ref = line.split("\t", 1)
+        if ref.endswith("^{}"):
+            continue
+        if ref.startswith("refs/heads/"):
+            local_ref = f"refs/remotes/{remote}/{ref.removeprefix('refs/heads/')}"
+        elif ref.startswith("refs/tags/"):
+            local_ref = ref
+        else:
+            raise ValueError(f"remote returned unsupported ref: {ref}")
+        expected[local_ref] = object_id
+    if not expected:
+        raise ValueError(f"remote {remote} exposes no branch or tag refs")
+    for ref, expected_id in expected.items():
+        try:
+            actual_id = _git(root, "rev-parse", "--verify", ref).decode("ascii").strip()
+        except ValueError as exc:
+            raise ValueError(f"remote ref is not fetched locally: {ref}") from exc
+        if actual_id != expected_id:
+            raise ValueError(f"local ref is stale relative to remote: {ref}")
+    return dict(sorted(expected.items()))
 
 
 def scan_history(
@@ -76,18 +153,20 @@ def scan_history(
     findings: list[HistoricalFinding] = []
     bytes_scanned = 0
     objects = reachable_objects(root, revisions)
-    for object_id, path in objects:
+    paths = historical_paths(root, revisions)
+    for commit_id, path in paths:
+        for rule in RULES:
+            if rule.pattern.search(path):
+                path_bytes = path.encode("utf-8", errors="surrogateescape")
+                findings.append(HistoricalFinding(
+                    object_id=commit_id,
+                    object_type="path",
+                    path_digest=hashlib.sha256(path_bytes).hexdigest(),
+                    line=0,
+                    rule=rule.name,
+                ))
+    for object_id in objects:
         object_type = _git(root, "cat-file", "-t", object_id).decode("ascii").strip()
-        if path is not None:
-            for rule in RULES:
-                if rule.pattern.search(path):
-                    findings.append(HistoricalFinding(
-                        object_id=object_id,
-                        object_type=object_type,
-                        path=path,
-                        line=0,
-                        rule=rule.name,
-                    ))
         # Tree payloads encode object IDs plus filenames. ``rev-list --objects``
         # already exposes those filenames above; blobs, commits, and annotated
         # tags contain the history text that must be inspected.
@@ -108,19 +187,22 @@ def scan_history(
         if len(payload) != size:
             raise ValueError(f"Git object {object_id} changed size while being scanned")
         bytes_scanned += len(payload)
-        text = payload.decode("utf-8", errors="ignore")
+        # Latin-1 is a lossless byte-to-code-point mapping. It preserves every
+        # ASCII restricted pattern without pretending arbitrary blobs are UTF-8.
+        text = payload.decode("latin-1")
         for line_number, line in enumerate(text.splitlines(), start=1):
             for rule in RULES:
                 if rule.pattern.search(line):
                     findings.append(HistoricalFinding(
                         object_id=object_id,
                         object_type=object_type,
-                        path=path,
+                        path_digest=None,
                         line=line_number,
                         rule=rule.name,
                     ))
     return HistoryScanResult(
         objects_scanned=len(objects),
+        paths_scanned=len(paths),
         bytes_scanned=bytes_scanned,
         findings=tuple(findings),
     )
@@ -130,10 +212,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--revision", action="append", dest="revisions")
+    parser.add_argument("--verify-remote")
     parser.add_argument("--max-object-bytes", type=int, default=DEFAULT_MAX_OBJECT_BYTES)
     args = parser.parse_args()
     revisions = tuple(args.revisions) if args.revisions else ("--all",)
     try:
+        if args.verify_remote:
+            snapshot = verify_remote_refs(args.root.resolve(), args.verify_remote)
+            if not args.revisions:
+                revisions = tuple(dict.fromkeys(snapshot.values()))
         result = scan_history(
             args.root.resolve(),
             revisions=revisions,
@@ -144,7 +231,9 @@ def main() -> int:
         return 2
     if result.findings:
         for finding in result.findings:
-            locator = finding.path or f"<{finding.object_type}>"
+            locator = f"<{finding.object_type}>"
+            if finding.path_digest:
+                locator = f"<historical-path sha256={finding.path_digest}>"
             print(
                 f"{finding.object_id[:12]}:{locator}:{finding.line}: "
                 f"restricted pattern: {finding.rule}",
@@ -158,7 +247,8 @@ def main() -> int:
         return 1
     print(
         "Git-history privacy scan passed: "
-        f"{result.objects_scanned} object(s), {result.bytes_scanned} byte(s)"
+        f"{result.objects_scanned} object(s), {result.paths_scanned} historical path(s), "
+        f"{result.bytes_scanned} byte(s)"
     )
     return 0
 
