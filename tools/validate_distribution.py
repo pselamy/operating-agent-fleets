@@ -25,6 +25,7 @@ DIGEST = re.compile(r"^[0-9a-f]{64}$")
 SOURCE = re.compile(r"^guide/(?P<chapter>[0-9]{2})-(?P<slug>[a-z0-9-]+)\.md$")
 CANONICAL = re.compile(r"^https://selamy\.dev/agent-fleets/(?P<chapter>[0-9]{2})-(?P<slug>[a-z0-9-]+)/$")
 DATE = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]$")
+DRAFT_MARKER = "<!-- PRE-H4 DRAFT — DO NOT PUBLISH -->"
 
 
 class DistributionValidationError(ValueError):
@@ -100,8 +101,11 @@ def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
         if verify_git:
             _verify_revision_path(root, revision, package["source_path"])
         content = _file(root, package["content_path"], "distribution/packages/")
-        if package["canonical_url"] not in content.read_text(encoding="utf-8"):
-            raise DistributionValidationError(f"package {package_id} omits its canonical URL")
+        content_text = content.read_text(encoding="utf-8")
+        if not content_text.startswith(DRAFT_MARKER + "\n"):
+            raise DistributionValidationError(f"package {package_id} lacks the mandatory pre-H4 marker")
+        if content_text.count(package["canonical_url"]) != 1:
+            raise DistributionValidationError(f"package {package_id} must contain its canonical URL exactly once")
         visual = package["visual_path"]
         if visual is not None:
             if not isinstance(visual, str) or not visual.startswith(("diagrams/", "assets/")):

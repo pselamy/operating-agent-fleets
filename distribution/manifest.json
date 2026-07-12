@@ -1,4 +1,19 @@
 {
   "schema_version": 1,
-  "packages": []
+  "packages": [
+    {
+      "id": "chapter-03-skills-linkedin-newsletter",
+      "chapter": 3,
+      "channel": "linkedin_newsletter",
+      "canonical_url": "https://selamy.dev/agent-fleets/03-skills-and-context-routing/",
+      "source_revision": "e32850e696d63c1f3b4474a71cc7dd60d0e07aad",
+      "source_path": "guide/03-skills-and-context-routing.md",
+      "content_path": "distribution/packages/chapter-03-skills-linkedin-newsletter.md",
+      "visual_path": "assets/thumbnails/mediated-collaboration.png",
+      "alt_text": "Editorial summary of mediated cross-plane collaboration. Durable work routes to a scoped capability, produces an evidence record, and receives independent verification without shared cognition.",
+      "visual_sha256": "92e7d7de5efb176dd02324f552012fa072ebdaf45c124e0b11ecc9aa15c1d348",
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "5196797420091e2b23a37caa02bc02acbe57bf69eb55a8f92db791c7760215dc"
+    }
+  ]
 }

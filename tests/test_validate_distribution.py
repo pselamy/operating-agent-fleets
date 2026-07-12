@@ -27,7 +27,7 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "guide" / "05-throughput.md").write_text("# Chapter\n", encoding="utf-8")
         canonical = "https://selamy.dev/agent-fleets/05-throughput/"
         content = root / "distribution" / "packages" / "chapter-05-post.md"
-        content.write_text(f"Draft. {canonical}\n", encoding="utf-8")
+        content.write_text(f"{distribution.DRAFT_MARKER}\nDraft. {canonical}\n", encoding="utf-8")
         (root / "diagrams" / "visual.svg").write_text("<svg/>", encoding="utf-8")
         package = {
             "id": "chapter-05-post", "chapter": 5, "channel": "linkedin_post",
@@ -51,7 +51,10 @@ class DistributionValidationTests(unittest.TestCase):
         return distribution.validate_distribution(root, verify_git=False)
 
     def test_repository_manifest_and_valid_draft(self) -> None:
-        self.assertEqual(distribution.validate_distribution(), 0)
+        self.assertEqual(
+            distribution.validate_distribution(),
+            len(distribution.load_manifest()["packages"]),
+        )
         root, _ = self.fixture()
         self.assertEqual(self.validate(root), 1)
 
@@ -122,10 +125,20 @@ class DistributionValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(distribution.DistributionValidationError, "blob digest differs"):
                 distribution.validate_distribution(root)
         content = root / manifest["packages"][0]["content_path"]
-        content.write_text("No canonical link.\n", encoding="utf-8")
+        content.write_text(f"{distribution.DRAFT_MARKER}\nNo canonical link.\n", encoding="utf-8")
         manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
         self.write(root, manifest)
-        with self.assertRaisesRegex(distribution.DistributionValidationError, "omits"):
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly once"):
+            self.validate(root)
+        content.write_text(f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\n{manifest['packages'][0]['canonical_url']}\n", encoding="utf-8")
+        manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly once"):
+            self.validate(root)
+        content.write_text(f"Draft. {manifest['packages'][0]['canonical_url']}\n", encoding="utf-8")
+        manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "pre-H4 marker"):
             self.validate(root)
         with mock.patch.object(distribution.subprocess, "run", return_value=mock.Mock(returncode=1)):
             with self.assertRaisesRegex(distribution.DistributionValidationError, "does not contain"):
