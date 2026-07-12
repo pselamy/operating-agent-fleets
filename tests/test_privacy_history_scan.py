@@ -116,6 +116,28 @@ class PrivacyHistoryScanTests(unittest.TestCase):
         self.assertNotIn(restricted_name, stderr.getvalue())
         self.assertIn("historical-path sha256=", stderr.getvalue())
 
+    def test_merge_result_only_path_is_scanned(self) -> None:
+        root = self.repository()
+        (root / "base.txt").write_text("base\n", encoding="utf-8")
+        self.commit(root)
+        primary = subprocess.run(
+            ["git", "branch", "--show-current"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        subprocess.run(["git", "checkout", "-q", "-b", "other"], cwd=root, check=True)
+        (root / "other.txt").write_text("other\n", encoding="utf-8")
+        self.commit(root)
+        subprocess.run(["git", "checkout", "-q", primary], cwd=root, check=True)
+        (root / "primary.txt").write_text("primary\n", encoding="utf-8")
+        self.commit(root)
+        subprocess.run(["git", "merge", "-q", "--no-commit", "other"], cwd=root, check=True)
+        restricted_name = "merge-only" + ".internal.txt"
+        (root / restricted_name).write_text("safe payload\n", encoding="utf-8")
+        self.commit(root, "merge with synthetic resolution path")
+        (root / restricted_name).unlink()
+        self.commit(root, "remove synthetic resolution path")
+        findings = scan_history(root).findings
+        self.assertIn(("path", "private hostname"), [(item.object_type, item.rule) for item in findings])
+
     def test_annotated_tag_payload_is_scanned(self) -> None:
         root = self.repository()
         (root / "public.md").write_text("safe\n", encoding="utf-8")
@@ -128,7 +150,7 @@ class PrivacyHistoryScanTests(unittest.TestCase):
     def test_lossless_binary_scan_and_partial_clone_guard(self) -> None:
         root = self.repository()
         candidate = root / "candidate.bin"
-        candidate.write_bytes(b"\xff\x00" + b"0x" + b"a1" * 20)
+        candidate.write_bytes(b"\xff" + b"0x" + b"a1" * 20)
         self.commit(root)
         self.assertIn("Ethereum address", [item.rule for item in scan_history(root).findings])
         subprocess.run(["git", "config", "remote.origin.promisor", "true"], cwd=root, check=True)
@@ -143,6 +165,30 @@ class PrivacyHistoryScanTests(unittest.TestCase):
             scan_history(root, max_object_bytes=1)
         with self.assertRaisesRegex(ValueError, "must be positive"):
             scan_history(root, max_object_bytes=0)
+        with self.assertRaisesRegex(ValueError, "historical path data"):
+            scan_history(root, max_path_bytes=1)
+
+    def test_oversized_tree_fails_closed(self) -> None:
+        root = self.repository()
+        for index in range(80):
+            (root / f"file-{index:03d}.txt").write_text("", encoding="utf-8")
+        self.commit(root)
+        with self.assertRaisesRegex(ValueError, r"\(tree, [0-9]+ bytes\) exceeds"):
+            scan_history(root, max_object_bytes=500)
+
+    def test_restricted_remote_ref_name_is_redacted(self) -> None:
+        source = self.repository()
+        (source / "safe.txt").write_text("safe\n", encoding="utf-8")
+        self.commit(source)
+        restricted = "service" + ".internal"
+        subprocess.run(["git", "tag", restricted], cwd=source, check=True)
+        clone_parent = tempfile.TemporaryDirectory()
+        self.addCleanup(clone_parent.cleanup)
+        clone = Path(clone_parent.name) / "clone"
+        subprocess.run(["git", "clone", "-q", source.as_uri(), str(clone)], check=True)
+        with self.assertRaisesRegex(ValueError, "restricted ref name") as raised:
+            verify_remote_refs(clone, "origin")
+        self.assertNotIn(restricted, str(raised.exception))
 
     def test_cli_pass_finding_and_operational_failure(self) -> None:
         root = self.repository()

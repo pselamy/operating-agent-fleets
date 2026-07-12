@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -19,6 +20,14 @@ else:
 
 
 DEFAULT_MAX_OBJECT_BYTES = 10 * 1024 * 1024
+DEFAULT_MAX_PATH_BYTES = 50 * 1024 * 1024
+HISTORY_RULES = tuple(
+    type(rule)(
+        rule.name,
+        re.compile(rule.pattern.pattern, (rule.pattern.flags & ~re.UNICODE) | re.ASCII),
+    )
+    for rule in RULES
+)
 
 
 @dataclass(frozen=True)
@@ -34,6 +43,7 @@ class HistoricalFinding:
 class HistoryScanResult:
     objects_scanned: int
     paths_scanned: int
+    path_bytes_scanned: int
     bytes_scanned: int
     findings: tuple[HistoricalFinding, ...]
 
@@ -88,16 +98,22 @@ def reachable_objects(root: Path, revisions: tuple[str, ...] = ("--all",)) -> li
     return objects
 
 
-def historical_paths(root: Path, revisions: tuple[str, ...]) -> list[tuple[str, str]]:
+def historical_paths(
+    root: Path,
+    revisions: tuple[str, ...],
+    *,
+    max_path_bytes: int = DEFAULT_MAX_PATH_BYTES,
+) -> tuple[list[tuple[str, str]], int]:
+    if max_path_bytes < 1:
+        raise ValueError("max historical-path bytes must be positive")
     commits = _git(root, "rev-list", *revisions).decode("ascii", errors="strict").splitlines()
     seen: set[str] = set()
     paths: list[tuple[str, str]] = []
+    path_bytes_scanned = 0
     for commit_id in commits:
         output = _git(
             root,
-            "diff-tree",
-            "--root",
-            "--no-commit-id",
+            "ls-tree",
             "--name-only",
             "-r",
             "-z",
@@ -106,12 +122,15 @@ def historical_paths(root: Path, revisions: tuple[str, ...]) -> list[tuple[str, 
         for raw_path in output.split(b"\0"):
             if not raw_path:
                 continue
+            path_bytes_scanned += len(raw_path)
+            if path_bytes_scanned > max_path_bytes:
+                raise ValueError("historical path data exceeds the scan limit")
             path = raw_path.decode("utf-8", errors="surrogateescape")
             if path in seen:
                 continue
             seen.add(path)
             paths.append((commit_id, path))
-    return paths
+    return paths, path_bytes_scanned
 
 
 def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
@@ -131,6 +150,8 @@ def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
         object_id, ref = line.split("\t", 1)
         if ref.endswith("^{}"):
             continue
+        if any(rule.pattern.search(ref) for rule in HISTORY_RULES):
+            raise ValueError("remote exposes a restricted ref name; value redacted")
         if ref.startswith("refs/heads/"):
             local_ref = f"refs/remotes/{remote}/{ref.removeprefix('refs/heads/')}"
         elif ref.startswith("refs/tags/"):
@@ -138,7 +159,7 @@ def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
         elif ref.startswith("refs/pull/"):
             local_ref = f"refs/remotes/{remote}/{ref.removeprefix('refs/')}"
         else:
-            raise ValueError(f"remote returned unsupported ref: {ref}")
+            raise ValueError("remote returned an unsupported ref class")
         expected[local_ref] = object_id
     if not expected:
         raise ValueError(f"remote {remote} exposes no branch or tag refs")
@@ -146,9 +167,11 @@ def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
         try:
             actual_id = _git(root, "rev-parse", "--verify", ref).decode("ascii").strip()
         except ValueError as exc:
-            raise ValueError(f"remote ref is not fetched locally: {ref}") from exc
+            ref_digest = hashlib.sha256(ref.encode("ascii")).hexdigest()
+            raise ValueError(f"remote ref is not fetched locally: sha256={ref_digest}") from exc
         if actual_id != expected_id:
-            raise ValueError(f"local ref is stale relative to remote: {ref}")
+            ref_digest = hashlib.sha256(ref.encode("ascii")).hexdigest()
+            raise ValueError(f"local ref is stale relative to remote: sha256={ref_digest}")
     return dict(sorted(expected.items()))
 
 
@@ -157,15 +180,18 @@ def scan_history(
     *,
     revisions: tuple[str, ...] = ("--all",),
     max_object_bytes: int = DEFAULT_MAX_OBJECT_BYTES,
+    max_path_bytes: int = DEFAULT_MAX_PATH_BYTES,
 ) -> HistoryScanResult:
     if max_object_bytes < 1:
         raise ValueError("max object size must be positive")
     findings: list[HistoricalFinding] = []
     bytes_scanned = 0
     objects = reachable_objects(root, revisions)
-    paths = historical_paths(root, revisions)
+    paths, path_bytes_scanned = historical_paths(
+        root, revisions, max_path_bytes=max_path_bytes
+    )
     for commit_id, path in paths:
-        for rule in RULES:
+        for rule in HISTORY_RULES:
             if rule.pattern.search(path):
                 path_bytes = path.encode("utf-8", errors="surrogateescape")
                 findings.append(HistoricalFinding(
@@ -177,11 +203,6 @@ def scan_history(
                 ))
     for object_id in objects:
         object_type = _git(root, "cat-file", "-t", object_id).decode("ascii").strip()
-        # Tree payloads encode object IDs plus filenames. ``rev-list --objects``
-        # already exposes those filenames above; blobs, commits, and annotated
-        # tags contain the history text that must be inspected.
-        if object_type == "tree":
-            continue
         size_text = _git(root, "cat-file", "-s", object_id).decode("ascii").strip()
         try:
             size = int(size_text)
@@ -191,6 +212,11 @@ def scan_history(
             raise ValueError(
                 f"Git object {object_id} ({object_type}, {size} bytes) exceeds the scan limit"
             )
+        # Every path in every reachable tree is enumerated above. Tree payloads
+        # contain only object IDs and entry names, so their size is bounded here
+        # and their names are scanned through the lossless NUL-delimited walk.
+        if object_type == "tree":
+            continue
         if object_type not in {"blob", "commit", "tag"}:
             raise ValueError(f"unsupported reachable Git object type: {object_type}")
         payload = _git(root, "cat-file", object_type, object_id)
@@ -201,7 +227,7 @@ def scan_history(
         # ASCII restricted pattern without pretending arbitrary blobs are UTF-8.
         text = payload.decode("latin-1")
         for line_number, line in enumerate(text.splitlines(), start=1):
-            for rule in RULES:
+            for rule in HISTORY_RULES:
                 if rule.pattern.search(line):
                     findings.append(HistoricalFinding(
                         object_id=object_id,
@@ -213,6 +239,7 @@ def scan_history(
     return HistoryScanResult(
         objects_scanned=len(objects),
         paths_scanned=len(paths),
+        path_bytes_scanned=path_bytes_scanned,
         bytes_scanned=bytes_scanned,
         findings=tuple(findings),
     )
@@ -224,6 +251,7 @@ def main() -> int:
     parser.add_argument("--revision", action="append", dest="revisions")
     parser.add_argument("--verify-remote")
     parser.add_argument("--max-object-bytes", type=int, default=DEFAULT_MAX_OBJECT_BYTES)
+    parser.add_argument("--max-path-bytes", type=int, default=DEFAULT_MAX_PATH_BYTES)
     args = parser.parse_args()
     revisions = tuple(args.revisions) if args.revisions else ("--all",)
     try:
@@ -235,6 +263,7 @@ def main() -> int:
             args.root.resolve(),
             revisions=revisions,
             max_object_bytes=args.max_object_bytes,
+            max_path_bytes=args.max_path_bytes,
         )
     except (OSError, UnicodeDecodeError, ValueError) as exc:
         print(f"Git-history privacy scan failed closed: {exc}", file=sys.stderr)
@@ -258,7 +287,7 @@ def main() -> int:
     print(
         "Git-history privacy scan passed: "
         f"{result.objects_scanned} object(s), {result.paths_scanned} historical path(s), "
-        f"{result.bytes_scanned} byte(s)"
+        f"{result.path_bytes_scanned} historical path byte(s), {result.bytes_scanned} payload byte(s)"
     )
     return 0
 

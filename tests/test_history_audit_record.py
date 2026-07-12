@@ -32,7 +32,7 @@ class HistoryAuditRecordTests(unittest.TestCase):
 
         result = scan_history(ROOT, revisions=revisions)
         objects = reachable_objects(ROOT, revisions)
-        paths = historical_paths(ROOT, revisions)
+        paths, path_bytes_scanned = historical_paths(ROOT, revisions)
         findings = [{
             "object_id": item.object_id,
             "object_type": item.object_type,
@@ -48,6 +48,8 @@ class HistoryAuditRecordTests(unittest.TestCase):
 
         self.assertEqual(result.objects_scanned, audit["reachable_objects_examined"])
         self.assertEqual(result.paths_scanned, audit["historical_paths_examined"])
+        self.assertEqual(result.path_bytes_scanned, audit["historical_path_bytes_scanned"])
+        self.assertEqual(path_bytes_scanned, audit["historical_path_bytes_scanned"])
         self.assertEqual(result.bytes_scanned, audit["payload_bytes_scanned"])
         self.assertEqual(len(result.findings), audit["finding_count"])
         self.assertEqual(
