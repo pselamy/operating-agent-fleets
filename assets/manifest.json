@@ -142,6 +142,37 @@
       },
       "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.thumbnail-lane-scoped-supersession",
+      "role": "diagram_thumbnail",
+      "path": "assets/thumbnails/lane-scoped-supersession.png",
+      "media_type": "image/png",
+      "sha256": "1f47cc36366e80fa0a32d0958238314d1eb17e6e79242a4b3be9a4516d46b158",
+      "width": 1200,
+      "height": 627,
+      "alt_text": "Editorial summary of lane-scoped supersession. A new revision requests cancellation of safe validation, waits for termination, and then validates the latest source SHA. In a separate lane, an active mutation finishes before an artifact digest is authorized and the real target is verified.",
+      "created_at": "2026-07-12",
+      "provenance_type": "derived",
+      "creation_method": "Source-bound SVG composition converted locally by macOS sips via tools/render_diagram_thumbnail.py",
+      "generation_provider": null,
+      "generation_model": null,
+      "prompt": null,
+      "sources": [
+        {"path": "diagrams/chapter-05/lane-scoped-supersession.light.svg", "sha256": "8383c6072fd14e94f93831a334e45efe2b4eba10eb4614dfa3b158b9b068cd79"}
+      ],
+      "derivation": {
+        "contract_version": 1,
+        "renderer_path": "tools/render_diagram_thumbnail.py",
+        "renderer_sha256": "4309ae80acb273822f6674c4517e8ababe2ec472fa6cdf46760ceb7522bed342",
+        "parameters": {
+          "title": "Lane-scoped supersession",
+          "takeaway": "Supersede safe validation; never interrupt mutation; verify the real target.",
+          "lanes": [["New revision", "Request validation stop", "Await termination", "Validate latest SHA"], ["Active mutation", "Let mutation finish", "Authorize artifact digest", "Verify real target"]]
+        }
+      },
+      "text_policy": "source_controlled_overlay",
+      "claim_status": "conceptual_not_evidence"
     }
   ]
 }

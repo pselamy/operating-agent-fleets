@@ -54,7 +54,8 @@ class AssetValidationTests(unittest.TestCase):
         (root / "assets" / "manifest.json").write_text(json.dumps(document), encoding="utf-8")
 
     def test_repository_asset_and_valid_fixture(self) -> None:
-        self.assertEqual(assets.validate_assets(), 6)
+        manifest = json.loads((assets.ROOT / "assets" / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(assets.validate_assets(), len(manifest["assets"]))
         root, _ = self.fixture()
         self.assertEqual(assets.validate_assets(root), 1)
 
