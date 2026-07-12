@@ -41,6 +41,8 @@ class AssetValidationTests(unittest.TestCase):
             "alt_text": "A useful synthetic alternative description.", "created_at": "2026-07-12",
             "provenance_type": "generated", "creation_method": "synthetic test", "generation_provider": "test provider",
             "generation_model": "test model v1", "prompt": "synthetic prompt",
+            "sources": [],
+            "derivation": None,
             "text_policy": "no_text_in_generated_pixels", "claim_status": "conceptual_not_evidence",
         }
         document = {"schema_version": 1, "assets": [asset]}
@@ -52,7 +54,7 @@ class AssetValidationTests(unittest.TestCase):
         (root / "assets" / "manifest.json").write_text(json.dumps(document), encoding="utf-8")
 
     def test_repository_asset_and_valid_fixture(self) -> None:
-        self.assertEqual(assets.validate_assets(), 4)
+        self.assertEqual(assets.validate_assets(), 6)
         root, _ = self.fixture()
         self.assertEqual(assets.validate_assets(root), 1)
 
@@ -172,6 +174,81 @@ class AssetValidationTests(unittest.TestCase):
         target.rename(root / record["path"])
         self.write(root, document)
         with self.assertRaisesRegex(assets.AssetValidationError, "unsafe reference"):
+            assets.validate_assets(root)
+
+    def test_derived_thumbnail_binds_to_immutable_source(self) -> None:
+        root, document = self.fixture()
+        source = root / "diagrams" / "chapter-01" / "sample.light.svg"
+        source.parent.mkdir(parents=True)
+        source.write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
+        renderer = root / "tools" / "render_diagram_thumbnail.py"
+        renderer.parent.mkdir()
+        renderer.write_text("synthetic renderer", encoding="utf-8")
+        target = root / "assets" / "thumbnails" / "sample.png"
+        target.parent.mkdir()
+        target.write_bytes(png(1200, 627))
+        record = copy.deepcopy(document["assets"][0])
+        record.update({
+            "id": "editorial.thumbnail-sample", "role": "diagram_thumbnail",
+            "path": "assets/thumbnails/sample.png", "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            "width": 1200, "height": 627, "provenance_type": "derived",
+            "creation_method": "bounded browser renderer", "generation_provider": None,
+            "generation_model": None, "prompt": None, "text_policy": "source_controlled_overlay",
+            "sources": [{"path": "diagrams/chapter-01/sample.light.svg", "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}],
+            "derivation": {"contract_version": 1, "renderer_path": "tools/render_diagram_thumbnail.py",
+                           "renderer_sha256": hashlib.sha256(renderer.read_bytes()).hexdigest(),
+                           "parameters": {"title": "Synthetic thumbnail", "takeaway": "A synthetic but valid takeaway.",
+                                          "lanes": [["First step", "Second step"]]}},
+        })
+        document["assets"].append(record)
+        self.write(root, document)
+        self.assertEqual(assets.validate_assets(root), 2)
+
+        cases = (
+            (lambda item: item.update(sources=[]), "derived provenance"),
+            (lambda item: item.update(generation_model="browser model"), "derived provenance"),
+            (lambda item: item["sources"][0].update(sha256="0" * 64), "source digest"),
+            (lambda item: item["sources"][0].update(path="private/sample.light.svg"), "source provenance"),
+            (lambda item: item["sources"][0].update(path="diagrams/chapter-01/sample.dark.svg"), "light-theme SVG"),
+            (lambda item: item["derivation"].update(renderer_sha256="0" * 64), "renderer provenance"),
+            (lambda item: item["derivation"]["parameters"].update(lanes=[]), "derivation parameters"),
+        )
+        for mutate, message in cases:
+            candidate = copy.deepcopy(document)
+            mutate(candidate["assets"][1])
+            self.write(root, candidate)
+            with self.assertRaisesRegex(assets.AssetValidationError, message):
+                assets.validate_assets(root)
+
+    def test_derived_thumbnail_rejects_symlinked_source(self) -> None:
+        root, document = self.fixture()
+        outside = root / "outside.svg"
+        outside.write_text("source", encoding="utf-8")
+        source = root / "diagrams" / "chapter-01" / "sample.light.svg"
+        source.parent.mkdir(parents=True)
+        source.symlink_to(outside)
+        renderer = root / "tools" / "render_diagram_thumbnail.py"
+        renderer.parent.mkdir()
+        renderer.write_text("synthetic renderer", encoding="utf-8")
+        target = root / "assets" / "thumbnails" / "sample.png"
+        target.parent.mkdir()
+        target.write_bytes(png(1200, 627))
+        record = copy.deepcopy(document["assets"][0])
+        record.update({
+            "id": "editorial.thumbnail-sample", "role": "diagram_thumbnail",
+            "path": "assets/thumbnails/sample.png", "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            "width": 1200, "height": 627, "provenance_type": "derived",
+            "creation_method": "bounded browser renderer", "generation_provider": None,
+            "generation_model": None, "prompt": None, "text_policy": "source_controlled_overlay",
+            "sources": [{"path": "diagrams/chapter-01/sample.light.svg", "sha256": hashlib.sha256(outside.read_bytes()).hexdigest()}],
+            "derivation": {"contract_version": 1, "renderer_path": "tools/render_diagram_thumbnail.py",
+                           "renderer_sha256": hashlib.sha256(renderer.read_bytes()).hexdigest(),
+                           "parameters": {"title": "Synthetic thumbnail", "takeaway": "A synthetic but valid takeaway.",
+                                          "lanes": [["First step", "Second step"]]}},
+        })
+        document["assets"].append(record)
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "source path is unsafe"):
             assets.validate_assets(root)
 
     def test_loader_header_and_cli_failures(self) -> None:

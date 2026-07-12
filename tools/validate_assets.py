@@ -19,7 +19,7 @@ FIELDS = {
     "id", "role", "path", "media_type", "sha256", "width", "height",
     "alt_text", "created_at", "provenance_type", "creation_method",
     "generation_provider", "generation_model", "prompt", "text_policy",
-    "claim_status",
+    "sources", "derivation", "claim_status",
 }
 ROLES = {"field_guide_hero", "conceptual_illustration", "social_card_template", "diagram_thumbnail"}
 TEXT_POLICIES = {"no_text_in_generated_pixels", "source_controlled_overlay", "not_applicable"}
@@ -27,6 +27,7 @@ ID = re.compile(r"^editorial\.[a-z][a-z0-9-]*$")
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
 DATE = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]$")
 ASSET_PATH = re.compile(r"^assets/(generated|templates|thumbnails)/[a-z0-9-]+\.(png|svg)$")
+SOURCE_PATH = re.compile(r"^diagrams/[a-z0-9-]+/[a-z0-9.-]+\.svg$")
 SVG_ELEMENTS = {
     "svg", "title", "desc", "defs", "linearGradient", "radialGradient", "stop",
     "filter", "feGaussianBlur", "feMerge", "feMergeNode", "rect", "path", "g",
@@ -173,7 +174,7 @@ def validate_assets(root: Path = ROOT) -> int:
         role_contracts = {
             "field_guide_hero": ("assets/generated/", ".png", "generated", (1536, 1024)),
             "social_card_template": ("assets/templates/", ".svg", "source_controlled", (1200, 627)),
-            "diagram_thumbnail": ("assets/thumbnails/", ".png", "generated", (1200, 627)),
+            "diagram_thumbnail": ("assets/thumbnails/", ".png", "derived", (1200, 627)),
         }
         if asset["role"] in role_contracts:
             prefix, suffix, provenance, dimensions = role_contracts[asset["role"]]
@@ -191,13 +192,63 @@ def validate_assets(root: Path = ROOT) -> int:
             raise AssetValidationError(f"asset {asset_id} has an invalid creation date") from exc
         if not isinstance(asset["creation_method"], str) or len(asset["creation_method"].strip()) < 3:
             raise AssetValidationError(f"asset {asset_id} lacks creation provenance")
+        sources = asset["sources"]
+        if not isinstance(sources, list):
+            raise AssetValidationError(f"asset {asset_id} has invalid source provenance")
+        seen_sources: set[str] = set()
+        for source in sources:
+            if not isinstance(source, dict) or set(source) != {"path", "sha256"}:
+                raise AssetValidationError(f"asset {asset_id} has invalid source provenance")
+            source_path = source["path"]
+            source_digest = source["sha256"]
+            if (not isinstance(source_path, str) or SOURCE_PATH.fullmatch(source_path) is None
+                    or source_path in seen_sources or not isinstance(source_digest, str)
+                    or DIGEST.fullmatch(source_digest) is None):
+                raise AssetValidationError(f"asset {asset_id} has invalid source provenance")
+            if asset["role"] == "diagram_thumbnail" and not source_path.endswith(".light.svg"):
+                raise AssetValidationError(f"asset {asset_id} thumbnail source must be a light-theme SVG")
+            seen_sources.add(source_path)
+            candidate = root / source_path
+            try:
+                source_resolved = candidate.resolve(strict=True)
+            except OSError as exc:
+                raise AssetValidationError(f"asset {asset_id} source is missing") from exc
+            if candidate.is_symlink() or root.resolve() not in source_resolved.parents or not source_resolved.is_file():
+                raise AssetValidationError(f"asset {asset_id} source path is unsafe")
+            if hashlib.sha256(candidate.read_bytes()).hexdigest() != source_digest:
+                raise AssetValidationError(f"asset {asset_id} source digest is invalid or stale")
         if asset["provenance_type"] == "generated":
+            if sources or asset["derivation"] is not None:
+                raise AssetValidationError(f"asset {asset_id} has invalid generated provenance")
             for field, minimum in (("generation_provider", 2), ("generation_model", 3), ("prompt", 1)):
                 if not isinstance(asset[field], str) or len(asset[field].strip()) < minimum:
                     raise AssetValidationError(f"asset {asset_id} lacks generator provenance")
         elif asset["provenance_type"] == "source_controlled":
-            if any(asset[field] is not None for field in ("generation_provider", "generation_model", "prompt")) or asset["text_policy"] != "source_controlled_overlay":
+            if sources or asset["derivation"] is not None or any(asset[field] is not None for field in ("generation_provider", "generation_model", "prompt")) or asset["text_policy"] != "source_controlled_overlay":
                 raise AssetValidationError(f"asset {asset_id} has invalid source-controlled provenance")
+        elif asset["provenance_type"] == "derived":
+            if (not sources or any(asset[field] is not None for field in ("generation_provider", "generation_model", "prompt"))
+                    or asset["text_policy"] != "source_controlled_overlay"):
+                raise AssetValidationError(f"asset {asset_id} has invalid derived provenance")
+            derivation = asset["derivation"]
+            if not isinstance(derivation, dict) or set(derivation) != {"contract_version", "renderer_path", "renderer_sha256", "parameters"}:
+                raise AssetValidationError(f"asset {asset_id} has invalid derivation contract")
+            renderer_path = derivation["renderer_path"]
+            renderer_digest = derivation["renderer_sha256"]
+            renderer = root / renderer_path if renderer_path == "tools/render_diagram_thumbnail.py" else None
+            if (derivation["contract_version"] != 1 or renderer is None or not renderer.is_file()
+                    or not isinstance(renderer_digest, str) or DIGEST.fullmatch(renderer_digest) is None
+                    or hashlib.sha256(renderer.read_bytes()).hexdigest() != renderer_digest):
+                raise AssetValidationError(f"asset {asset_id} renderer provenance is invalid or stale")
+            parameters = derivation["parameters"]
+            if (not isinstance(parameters, dict) or set(parameters) != {"title", "takeaway", "lanes"}
+                    or not isinstance(parameters["title"], str) or not 3 <= len(parameters["title"]) <= 72
+                    or not isinstance(parameters["takeaway"], str) or not 12 <= len(parameters["takeaway"]) <= 82
+                    or not isinstance(parameters["lanes"], list) or not 1 <= len(parameters["lanes"]) <= 2
+                    or any(not isinstance(lane, list) or not 2 <= len(lane) <= 4
+                           or any(not isinstance(step, str) or not 2 <= len(step) <= 26 for step in lane)
+                           for lane in parameters["lanes"])):
+                raise AssetValidationError(f"asset {asset_id} has invalid derivation parameters")
         else:
             raise AssetValidationError(f"asset {asset_id} has invalid provenance type")
     discovered = {
