@@ -1,24 +1,32 @@
 {
   "schema_version": 1,
   "repository": "https://github.com/pselamy/operating-agent-fleets",
-  "audited_revision": "7c28b36f6caca6d893a05f6f171d454c6bc59801",
+  "audited_revision": "9347c973d93b5d74244e7e1bca2607548f20e864",
   "audited_at": "2026-07-12",
-  "revision_set": "--all",
+  "revision_set": "evidence/audits/git-history-privacy-2026-07-12-refs.json",
+  "revision_set_file_sha256": "ad0ef42df0181e10bd4f5f1a0644ffbe8c7d07aa48a5af453879ae51a6ce8917",
+  "revision_set_canonical_sha256": "766179faff510f9b69f72bd2d33e11a0fa40f6ac7197857c8bf4eeb5ae12b89a",
   "clone_shallow": false,
-  "remote_branch_heads": 9,
-  "fetched_remote_branch_heads": 9,
-  "reachable_objects_examined": 497,
-  "payload_bytes_scanned": 10377464,
+  "remote_refs": 57,
+  "fetched_remote_refs": 57,
+  "reachable_objects_examined": 520,
+  "reachable_object_set_sha256": "23d397ececdd07f2fc42d2f8a8acfd4850f13b0627eac555ae586eae0c314984",
+  "historical_paths_examined": 116,
+  "historical_path_set_sha256": "60a5ea76b08f9ef8c376989e2af686332c466111a792f5ddabe072e2cccd3e11",
+  "payload_bytes_scanned": 10426921,
   "scanner": "tools/privacy_history_scan.py",
-  "command": "python3 tools/privacy_history_scan.py --revision=--all",
+  "scanner_sha256": "5eb992c85ca4d5dd9655776812f2164448569993c5326f3f42c2ed094d98588e",
+  "command": "python3 tools/privacy_history_scan.py --verify-remote origin",
   "result": "REVISE",
-  "finding_count": 126,
+  "finding_count": 124,
+  "finding_set_sha256": "7a42c274bb021a4a07b08e10bb27a0d34019a839ded490fce8517205db852566",
+  "unique_finding_objects": 83,
   "finding_summary": [
     {
       "rule": "private hostname",
       "object_type": "commit",
-      "matches": 125,
-      "unique_objects": 83,
+      "matches": 123,
+      "unique_objects": 82,
       "classification": "Automatically generated local-host committer metadata; still forbidden by the current absolute disclosure policy."
     },
     {
@@ -47,7 +55,7 @@
   "limitations": [
     "Pattern scanning cannot prove the absence of every secret or sensitive value.",
     "The scan does not perform OCR or semantic inspection of binary image content.",
-    "The scan covers objects reachable from fetched local refs, not unreachable objects, forks, caches, workflow logs, release assets, or deleted collaboration surfaces.",
+    "The scan covers objects reachable from the recorded public branch, tag, and pull-request ref tips, not unreachable objects, forks, caches, workflow logs, release assets, or deleted collaboration surfaces no longer reachable from those refs.",
     "A zero-match rule means only that this scanner found no matching pattern at this cutoff."
   ]
 }
