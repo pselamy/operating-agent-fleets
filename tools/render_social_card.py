@@ -49,7 +49,7 @@ def render_card(template: Path, output: Path, *, chapter: int, title_lines: list
         raise SocialCardError("title line exceeds the conservative rendered-width budget")
     if SLUG.fullmatch(slug) is None:
         raise SocialCardError("slug must be lowercase kebab case")
-    url = f"selamy.dev/agent-fleets/{slug}/"
+    url = f"selamy.dev/agent-fleets/{chapter:02d}-{slug}/"
     if text_units(url) > MAX_URL_UNITS:
         raise SocialCardError("chapter URL exceeds the conservative rendered-width budget")
     if output.resolve() == template.resolve():

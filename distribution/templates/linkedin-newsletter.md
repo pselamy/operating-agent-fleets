@@ -20,7 +20,7 @@ Use one approved public-safe diagram thumbnail or social card. Keep labels in ac
 
 ## Canonical link
 
-Link once to `https://selamy.dev/agent-fleets/<chapter>/`. State that the canonical chapter contains evidence records, corrections, and full limitations.
+Link once to `https://selamy.dev/agent-fleets/<NN>-<chapter-slug>/`. State that the canonical chapter contains evidence records, corrections, and full limitations.
 
 ## Question
 
