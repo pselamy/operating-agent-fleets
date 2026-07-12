@@ -60,8 +60,10 @@ class PrivacyForwardGuardTests(unittest.TestCase):
         head = self.commit(root, "baseline")
         with self.assertRaisesRegex(ValueError, "no new commits"):
             forward_revision_range(root, head, head)
-        with self.assertRaisesRegex(ValueError, "invalid"):
+        with self.assertRaisesRegex(ValueError, "full lowercase commit OIDs"):
             forward_revision_range(root, "--all", head)
+        with self.assertRaisesRegex(ValueError, "full lowercase commit OIDs"):
+            forward_revision_range(root, "HEAD", head)
 
         subprocess.run(["git", "checkout", "-q", "--orphan", "unrelated"], cwd=root, check=True)
         subprocess.run(["git", "rm", "-q", "-rf", "."], cwd=root, check=True)
@@ -74,6 +76,74 @@ class PrivacyForwardGuardTests(unittest.TestCase):
             "--base", head, "--head", unrelated,
         ]):
             self.assertEqual(main(), 2)
+
+    def test_range_finds_deleted_blob_and_restricted_candidate_tree_path(self) -> None:
+        root = self.repository()
+        (root / "public.md").write_text("baseline\n", encoding="utf-8")
+        base = self.commit(root, "baseline")
+        candidate = root / "candidate.txt"
+        candidate.write_text("0x" + "a1" * 20 + "\n", encoding="utf-8")
+        self.commit(root, "introduce restricted blob")
+        candidate.unlink()
+        restricted_path = root / ("service" + ".internal.txt")
+        restricted_path.write_text("safe payload\n", encoding="utf-8")
+        head = self.commit(root, "retain restricted path")
+        findings = scan_history(
+            root, revisions=(forward_revision_range(root, base, head),)
+        ).findings
+        self.assertIn(("blob", "Ethereum address"), [
+            (finding.object_type, finding.rule) for finding in findings
+        ])
+        self.assertIn(("path", "private hostname"), [
+            (finding.object_type, finding.rule) for finding in findings
+        ])
+
+    def test_annotated_tags_remain_full_remote_audit_responsibility(self) -> None:
+        root = self.repository()
+        (root / "public.md").write_text("baseline\n", encoding="utf-8")
+        base = self.commit(root, "baseline")
+        (root / "public.md").write_text("candidate\n", encoding="utf-8")
+        head = self.commit(root, "candidate")
+        synthetic = "gh" + "p_" + "A" * 24
+        subprocess.run(
+            ["git", "tag", "-a", "candidate-tag", "-m", synthetic, head],
+            cwd=root,
+            check=True,
+        )
+        forward_findings = scan_history(
+            root, revisions=(forward_revision_range(root, base, head),)
+        ).findings
+        self.assertNotIn("GitHub credential", [item.rule for item in forward_findings])
+        full_tag_findings = scan_history(root, revisions=("candidate-tag",)).findings
+        self.assertIn(("tag", "GitHub credential"), [
+            (finding.object_type, finding.rule) for finding in full_tag_findings
+        ])
+
+    def test_merge_result_only_path_is_in_candidate_range(self) -> None:
+        root = self.repository()
+        (root / "base.md").write_text("base\n", encoding="utf-8")
+        base = self.commit(root, "baseline")
+        primary = subprocess.run(
+            ["git", "branch", "--show-current"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        subprocess.run(["git", "checkout", "-q", "-b", "other"], cwd=root, check=True)
+        (root / "other.md").write_text("other\n", encoding="utf-8")
+        self.commit(root, "other change")
+        subprocess.run(["git", "checkout", "-q", primary], cwd=root, check=True)
+        (root / "primary.md").write_text("primary\n", encoding="utf-8")
+        self.commit(root, "primary change")
+        subprocess.run(
+            ["git", "merge", "-q", "--no-commit", "other"], cwd=root, check=True
+        )
+        restricted = root / ("merge-only" + ".internal.txt")
+        restricted.write_text("safe payload\n", encoding="utf-8")
+        head = self.commit(root, "merge resolution")
+        findings = scan_history(
+            root, revisions=(forward_revision_range(root, base, head),)
+        ).findings
+        self.assertIn(("path", "private hostname"), [
+            (finding.object_type, finding.rule) for finding in findings
+        ])
 
     def test_invalid_limits_fail_without_raw_findings(self) -> None:
         root = self.repository()

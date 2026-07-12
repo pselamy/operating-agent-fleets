@@ -17,15 +17,16 @@ else:
     from tools.privacy_history_scan import _git, scan_history
 
 
-REVISION_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/@{}^~:-]{0,199}$", re.ASCII)
+COMMIT_OID = re.compile(r"^[0-9a-f]{40}$", re.ASCII)
 
 
 def forward_revision_range(root: Path, base: str, head: str) -> str:
     """Return a non-empty, descendant-only range safe for a forward privacy gate."""
-    if REVISION_NAME.fullmatch(base) is None or REVISION_NAME.fullmatch(head) is None:
-        raise ValueError("base or head revision is invalid")
+    if COMMIT_OID.fullmatch(base) is None or COMMIT_OID.fullmatch(head) is None:
+        raise ValueError("base and head must be full lowercase commit OIDs")
     for revision in (base, head):
-        _git(root, "rev-parse", "--verify", f"{revision}^{{commit}}")
+        if _git(root, "cat-file", "-t", revision).decode("ascii").strip() != "commit":
+            raise ValueError("base or head does not identify a commit")
     ancestor = subprocess.run(
         ["git", "merge-base", "--is-ancestor", base, head],
         cwd=root,
@@ -80,7 +81,8 @@ def main() -> int:
         return 1
     print(
         "Forward Git privacy guard passed: "
-        f"{result.objects_scanned} new object(s), {result.paths_scanned} new historical path(s), "
+        f"{result.objects_scanned} candidate-range object(s), "
+        f"{result.paths_scanned} candidate-tree path observation(s), "
         f"{result.path_bytes_scanned} historical path byte(s), {result.bytes_scanned} payload byte(s)"
     )
     return 0
