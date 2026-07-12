@@ -5,7 +5,7 @@
   "description": "A draft record only. This schema cannot represent approval, authorization, publication, or live verification.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "chapter", "channel", "canonical_url", "source_revision", "source_path", "content_path", "visual_path", "alt_text", "evidence_cutoff", "content_sha256"],
+  "required": ["id", "chapter", "channel", "canonical_url", "source_revision", "source_path", "content_path", "visual_path", "alt_text", "visual_sha256", "evidence_cutoff", "content_sha256"],
   "properties": {
     "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
     "chapter": {"type": "integer", "minimum": 1, "maximum": 8},
@@ -16,6 +16,7 @@
     "content_path": {"type": "string", "pattern": "^distribution/packages/[a-z0-9-]+\\.md$"},
     "visual_path": {"type": ["string", "null"]},
     "alt_text": {"type": ["string", "null"]},
+    "visual_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
     "evidence_cutoff": {"type": "string", "format": "date"},
     "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   }
