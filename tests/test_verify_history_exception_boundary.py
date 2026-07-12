@@ -141,6 +141,9 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
             verifier.load_boundary(ROOT, malformed)
 
         cases: list[tuple[dict, str]] = []
+        boolean_schema = self.boundary()
+        boolean_schema["schema_version"] = True
+        cases.append((boolean_schema, "top-level shape"))
         for field, value, message in (
             ("status", "forged", "invalid status"),
             ("decision_owner", "Agent", "decision metadata"),
@@ -285,6 +288,45 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
             self.assertFalse(verifier._validate_current_candidate(
                 root, ready, boundary_path, current, None
             ))
+
+        in_repo_attestation = root / "local-attestation.json"
+        in_repo_attestation.write_text(json.dumps(attestation), encoding="utf-8")
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "outside the worktree"):
+                verifier._validate_current_candidate(
+                    root, ready, boundary_path, current, in_repo_attestation
+                )
+        subprocess.run(["git", "add", str(in_repo_attestation)], cwd=root, check=True)
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "outside the worktree"):
+                verifier._validate_current_candidate(
+                    root, ready, boundary_path, current, in_repo_attestation
+                )
+        symlink_attestation = Path(directory.name) / "linked-attestation.json"
+        symlink_attestation.symlink_to(in_repo_attestation)
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "symbolic link"):
+                verifier._validate_current_candidate(
+                    root, ready, boundary_path, current, symlink_attestation
+                )
+
+        git_attestation = root / ".git" / "attestation.json"
+        git_attestation.write_text(json.dumps(attestation), encoding="utf-8")
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "outside the worktree"):
+                verifier._validate_current_candidate(
+                    root, ready, boundary_path, current, git_attestation
+                )
+
+        boolean_attestation = copy.deepcopy(attestation)
+        boolean_attestation["schema_version"] = True
+        boolean_attestation_path = Path(directory.name) / "boolean-attestation.json"
+        boolean_attestation_path.write_text(json.dumps(boolean_attestation), encoding="utf-8")
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "invalid shape"):
+                verifier._validate_current_candidate(
+                    root, ready, boundary_path, current, boolean_attestation_path
+                )
 
         forged = copy.deepcopy(attestation)
         forged["activation_candidate_revision"] = base

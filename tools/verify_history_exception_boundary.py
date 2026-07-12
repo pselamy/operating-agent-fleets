@@ -117,9 +117,13 @@ def _string(value: object) -> bool:
     return isinstance(value, str)
 
 
+def _schema_one(value: object) -> bool:
+    return type(value) is int and value == 1
+
+
 def load_boundary(root: Path, path: Path) -> tuple[dict, dict]:
     boundary = _load_json(path)
-    if set(boundary) != BOUNDARY_FIELDS or boundary.get("schema_version") != 1:
+    if set(boundary) != BOUNDARY_FIELDS or not _schema_one(boundary.get("schema_version")):
         raise BoundaryError("exception boundary has an invalid top-level shape")
     if not _string(boundary["status"]) or boundary["status"] not in {
             "pending_second_h1", "ready_for_second_h1"}:
@@ -208,7 +212,7 @@ def load_boundary(root: Path, path: Path) -> tuple[dict, dict]:
 
 def _load_attestation(path: Path, current_revision: str) -> dict:
     attestation = _load_json(path)
-    if set(attestation) != ATTESTATION_FIELDS or attestation.get("schema_version") != 1:
+    if set(attestation) != ATTESTATION_FIELDS or not _schema_one(attestation.get("schema_version")):
         raise BoundaryError("external H1 attestation has an invalid shape")
     expected_statement = (
         "H1 PASS BOUNDED EXCEPTIONS: approve activation candidate " + current_revision
@@ -226,6 +230,25 @@ def _load_attestation(path: Path, current_revision: str) -> dict:
             != attestation["decision_statement_sha256"]):
         raise BoundaryError("external H1 attestation is invalid or bound to another candidate")
     return attestation
+
+
+def _require_external_attestation(root: Path, path: Path) -> Path:
+    supplied = Path(os.path.abspath(path))
+    if supplied.is_symlink():
+        raise BoundaryError("external H1 attestation cannot be a symbolic link")
+    resolved = path.resolve(strict=True)
+    worktree = Path(_git(root, "rev-parse", "--show-toplevel").decode().strip()).resolve()
+    common_raw = Path(_git(root, "rev-parse", "--git-common-dir").decode().strip())
+    common = (common_raw if common_raw.is_absolute() else root / common_raw).resolve()
+    if (supplied == worktree or supplied.is_relative_to(worktree)
+            or resolved == worktree or resolved.is_relative_to(worktree)):
+        raise BoundaryError("external H1 attestation must be outside the worktree")
+    if (supplied == common or supplied.is_relative_to(common)
+            or resolved == common or resolved.is_relative_to(common)):
+        raise BoundaryError("external H1 attestation must be outside the Git common directory")
+    if not resolved.is_file():
+        raise BoundaryError("external H1 attestation must resolve to a regular file")
+    return resolved
 
 
 def _validate_current_candidate(
@@ -271,7 +294,7 @@ def _validate_current_candidate(
         raise BoundaryError("policy base is not the reviewed pending boundary")
     if attestation_path is None:
         return False
-    _load_attestation(attestation_path, current_revision)
+    _load_attestation(_require_external_attestation(root, attestation_path), current_revision)
     return True
 
 
