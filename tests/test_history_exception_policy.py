@@ -15,7 +15,7 @@ FORWARD_GUARD = ROOT / "tools" / "privacy_forward_guard.py"
 
 
 class HistoryExceptionPolicyTests(unittest.TestCase):
-    def test_pending_boundary_is_exactly_bound_and_grants_no_active_exception(self) -> None:
+    def test_ready_boundary_is_exactly_bound_and_grants_no_self_authorization(self) -> None:
         boundary = json.loads(BOUNDARY.read_text(encoding="utf-8"))
         audit = json.loads(AUDIT.read_text(encoding="utf-8"))
         self.assertEqual(set(boundary), {
@@ -26,7 +26,7 @@ class HistoryExceptionPolicyTests(unittest.TestCase):
             "raw_values_recorded", "activation", "activation_rule",
         })
         self.assertEqual(boundary["schema_version"], 1)
-        self.assertEqual(boundary["status"], "pending_second_h1")
+        self.assertEqual(boundary["status"], "ready_for_second_h1")
         self.assertEqual(
             boundary["decision_statement"],
             "H1 REVISE: preserve history; treat the two recorded audit categories as "
@@ -45,7 +45,14 @@ class HistoryExceptionPolicyTests(unittest.TestCase):
         self.assertTrue(boundary["preserve_history"])
         self.assertFalse(boundary["history_rewrite_authorized"])
         self.assertFalse(boundary["raw_values_recorded"])
-        self.assertIsNone(boundary["activation"])
+        self.assertEqual(boundary["activation"], {
+            "policy_base_revision": "aa883e4277bb80559a8822dc016922b15ef8100e",
+            "allowed_paths": [
+                "docs/disclosure-policy.md",
+                "evidence/audits/git-history-privacy-exceptions-2026-07-12.json",
+                "tests/test_history_exception_policy.py",
+            ],
+        })
 
         categories = {(item["rule"], item["object_type"]): item["matches"]
                       for item in boundary["categories"]}

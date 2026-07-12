@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "pending_second_h1",
+  "status": "ready_for_second_h1",
   "decision_owner": "Patrick Selamy",
   "decision_recorded_at": "2026-07-12",
   "decision_statement": "H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.",
@@ -29,6 +29,13 @@
   "preserve_history": true,
   "history_rewrite_authorized": false,
   "raw_values_recorded": false,
-  "activation": null,
+  "activation": {
+    "policy_base_revision": "aa883e4277bb80559a8822dc016922b15ef8100e",
+    "allowed_paths": [
+      "docs/disclosure-policy.md",
+      "evidence/audits/git-history-privacy-exceptions-2026-07-12.json",
+      "tests/test_history_exception_policy.py"
+    ]
+  },
   "activation_rule": "A second H1 decision must bind the exact ready candidate revision through an external attestation. The ready candidate may differ from its pending policy base only at the declared activation paths. No repository field can activate the boundary by itself."
 }
