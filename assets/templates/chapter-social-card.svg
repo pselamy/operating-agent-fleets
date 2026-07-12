@@ -28,7 +28,7 @@
     <text id="title-line-2" x="70" y="330" font-size="52" font-weight="760" letter-spacing="-1.5">[TITLE LINE 2]</text>
     <text id="title-line-3" x="70" y="390" font-size="52" font-weight="760" letter-spacing="-1.5">[TITLE LINE 3]</text>
     <text x="70" y="438" font-size="23" fill="#c7d4df">Durable work · bounded authority · systems that learn</text>
-    <text id="chapter-url" x="70" y="520" font-size="22" fill="#91a7b8">selamy.dev/agent-fleets/[CHAPTER-SLUG]/</text>
+    <text id="chapter-url" x="70" y="520" font-size="22" fill="#91a7b8">selamy.dev/agent-fleets/[NN-CHAPTER-SLUG]/</text>
   </g>
 
   <g transform="translate(900 314)" fill="none" stroke-linecap="round">

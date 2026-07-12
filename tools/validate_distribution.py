@@ -23,7 +23,7 @@ ID = re.compile(r"^[a-z][a-z0-9-]*$")
 SHA = re.compile(r"^[0-9a-f]{40}$")
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
 SOURCE = re.compile(r"^guide/(?P<chapter>[0-9]{2})-(?P<slug>[a-z0-9-]+)\.md$")
-CANONICAL = re.compile(r"^https://selamy\.dev/agent-fleets/(?P<slug>[a-z0-9-]+)/$")
+CANONICAL = re.compile(r"^https://selamy\.dev/agent-fleets/(?P<chapter>[0-9]{2})-(?P<slug>[a-z0-9-]+)/$")
 DATE = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]$")
 
 
@@ -88,7 +88,8 @@ def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
         canonical_match = CANONICAL.fullmatch(package["canonical_url"]) if isinstance(package["canonical_url"], str) else None
         if source_match is None or canonical_match is None:
             raise DistributionValidationError(f"package {package_id} has an invalid source or canonical URL")
-        if int(source_match["chapter"]) != chapter or source_match["slug"] != canonical_match["slug"]:
+        if (int(source_match["chapter"]) != chapter or int(canonical_match["chapter"]) != chapter
+                or source_match["slug"] != canonical_match["slug"]):
             raise DistributionValidationError(f"package {package_id} chapter, source, and canonical URL disagree")
         revision = package["source_revision"]
         if not isinstance(revision, str) or SHA.fullmatch(revision) is None:

@@ -26,7 +26,7 @@ class SocialCardTests(unittest.TestCase):
         root = ElementTree.parse(self.output).getroot()
         text = " ".join((element.text or "") for element in root.iter())
         self.assertIn("CHAPTER 07", text)
-        self.assertIn("selamy.dev/agent-fleets/agent-portfolio/", text)
+        self.assertIn("selamy.dev/agent-fleets/07-agent-portfolio/", text)
         self.assertIn("not architecture", text)
         self.assertNotIn("[", text)
 
@@ -57,6 +57,8 @@ class SocialCardTests(unittest.TestCase):
             title_lines=["Skills instead of a", "monolithic framework", "iiiiiiiiiiiiiiiiiiiiiiiiiiii"],
             slug="skills-and-context-routing",
         )
+        text = " ".join((element.text or "") for element in ElementTree.parse(self.output).getroot().iter())
+        self.assertIn("selamy.dev/agent-fleets/03-skills-and-context-routing/", text)
         self.assertTrue(self.output.is_file())
         self.assertLess(cards.text_units("mixed Case"), cards.text_units("WWWWWWWWWW"))
 

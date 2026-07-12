@@ -26,7 +26,7 @@
       "role": "social_card_template",
       "path": "assets/templates/chapter-social-card.svg",
       "media_type": "image/svg+xml",
-      "sha256": "83efe671be6ad03e0b4af8a4cbee7c4042261c5b0829da9047dd6e8dde407b77",
+      "sha256": "aa3e9f82d0ed2c641901b42298a0d45db6bd231c8cc0a011881902f2d721f73b",
       "width": 1200,
       "height": 627,
       "alt_text": "Midnight-blue chapter social-card template with source-controlled placeholders for chapter number, three bounded title lines, and chapter-specific canonical slug on the left. Amber and cyan loops orbit a layered central record on the right. Visible and accessible labels identify the motif as editorial metaphor, not deployed architecture.",

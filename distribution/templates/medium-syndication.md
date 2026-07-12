@@ -6,7 +6,7 @@ Import or adapt the canonical chapter without adding claims. Preserve headings, 
 
 Required metadata:
 
-- Canonical URL: `https://selamy.dev/agent-fleets/<chapter>/`
+- Canonical URL: `https://selamy.dev/agent-fleets/<NN>-<chapter-slug>/`
 - Exact source revision:
 - Canonical publication time:
 - Syndication content SHA-256:

@@ -25,7 +25,7 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "guide").mkdir()
         (root / "diagrams").mkdir()
         (root / "guide" / "05-throughput.md").write_text("# Chapter\n", encoding="utf-8")
-        canonical = "https://selamy.dev/agent-fleets/throughput/"
+        canonical = "https://selamy.dev/agent-fleets/05-throughput/"
         content = root / "distribution" / "packages" / "chapter-05-post.md"
         content.write_text(f"Draft. {canonical}\n", encoding="utf-8")
         (root / "diagrams" / "visual.svg").write_text("<svg/>", encoding="utf-8")
@@ -71,7 +71,9 @@ class DistributionValidationTests(unittest.TestCase):
             (lambda value: value["packages"][0].update(channel="email"), "channel"),
             (lambda value: value["packages"][0].update(chapter=True), "chapter"),
             (lambda value: value["packages"][0].update(canonical_url="https://example.com/x"), "source or canonical"),
-            (lambda value: value["packages"][0].update(canonical_url="https://selamy.dev/agent-fleets/other/"), "disagree"),
+            (lambda value: value["packages"][0].update(canonical_url="https://selamy.dev/agent-fleets/05-other/"), "disagree"),
+            (lambda value: value["packages"][0].update(canonical_url="https://selamy.dev/agent-fleets/04-throughput/"), "disagree"),
+            (lambda value: value["packages"][0].update(canonical_url="https://selamy.dev/agent-fleets/throughput/"), "source or canonical"),
             (lambda value: value["packages"][0].update(source_revision="main"), "immutable"),
         )
         for mutate, message in cases:
