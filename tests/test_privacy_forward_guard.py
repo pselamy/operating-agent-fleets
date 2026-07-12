@@ -145,6 +145,45 @@ class PrivacyForwardGuardTests(unittest.TestCase):
             (finding.object_type, finding.rule) for finding in findings
         ])
 
+    def test_local_replacement_ref_cannot_hide_restricted_candidate(self) -> None:
+        root = self.repository()
+        (root / "public.md").write_text("baseline\n", encoding="utf-8")
+        base = self.commit(root, "baseline")
+        primary = subprocess.run(
+            ["git", "branch", "--show-current"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        (root / "candidate.txt").write_text("0x" + "a1" * 20 + "\n", encoding="utf-8")
+        restricted = self.commit(root, "restricted candidate")
+
+        subprocess.run(["git", "checkout", "-q", "-b", "safe-sibling", base], cwd=root, check=True)
+        (root / "public.md").write_text("safe sibling\n", encoding="utf-8")
+        safe = self.commit(root, "safe sibling")
+        subprocess.run(["git", "replace", restricted, safe], cwd=root, check=True)
+        subprocess.run(["git", "checkout", "-q", primary], cwd=root, check=True)
+
+        with mock.patch("sys.argv", [
+            "privacy_forward_guard.py", "--root", str(root),
+            "--base", base, "--head", restricted,
+        ]):
+            self.assertEqual(main(), 1)
+
+    def test_sha256_repository_is_explicitly_unsupported(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        subprocess.run(["git", "init", "-q", "--object-format=sha256"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "synthetic@example.test"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "Synthetic Test"], cwd=root, check=True)
+        (root / "public.md").write_text("baseline\n", encoding="utf-8")
+        base = self.commit(root, "baseline")
+        (root / "public.md").write_text("candidate\n", encoding="utf-8")
+        head = self.commit(root, "candidate")
+        self.assertEqual(len(base), 64)
+        with mock.patch("sys.argv", [
+            "privacy_forward_guard.py", "--root", str(root), "--base", base, "--head", head,
+        ]):
+            self.assertEqual(main(), 2)
+
     def test_invalid_limits_fail_without_raw_findings(self) -> None:
         root = self.repository()
         (root / "public.md").write_text("baseline\n", encoding="utf-8")

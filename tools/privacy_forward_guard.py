@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 
 if __package__:
@@ -20,8 +22,22 @@ else:
 COMMIT_OID = re.compile(r"^[0-9a-f]{40}$", re.ASCII)
 
 
+@contextmanager
+def _replacement_objects_disabled():
+    """Make every descendant Git process ignore local replacement-object refs."""
+    previous = os.environ.get("GIT_NO_REPLACE_OBJECTS")
+    os.environ["GIT_NO_REPLACE_OBJECTS"] = "1"
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("GIT_NO_REPLACE_OBJECTS", None)
+        else:
+            os.environ["GIT_NO_REPLACE_OBJECTS"] = previous
+
+
 def forward_revision_range(root: Path, base: str, head: str) -> str:
-    """Return a non-empty, descendant-only range safe for a forward privacy gate."""
+    """Return a non-empty SHA-1 descendant range; callers must disable replacements."""
     if COMMIT_OID.fullmatch(base) is None or COMMIT_OID.fullmatch(head) is None:
         raise ValueError("base and head must be full lowercase commit OIDs")
     for revision in (base, head):
@@ -44,6 +60,28 @@ def forward_revision_range(root: Path, base: str, head: str) -> str:
     return revision_range
 
 
+def run_forward_guard(
+    root: Path,
+    base: str,
+    head: str,
+    *,
+    max_object_bytes: int = 10 * 1024 * 1024,
+    max_path_bytes: int = 50 * 1024 * 1024,
+):
+    """Scan one immutable SHA-1 range with Git replacement objects disabled."""
+    with _replacement_objects_disabled():
+        object_format = _git(root, "rev-parse", "--show-object-format").decode("ascii").strip()
+        if object_format != "sha1":
+            raise ValueError("forward guard supports only SHA-1 repositories")
+        revision_range = forward_revision_range(root, base, head)
+        return scan_history(
+            root,
+            revisions=(revision_range,),
+            max_object_bytes=max_object_bytes,
+            max_path_bytes=max_path_bytes,
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
@@ -53,10 +91,10 @@ def main() -> int:
     parser.add_argument("--max-path-bytes", type=int, default=50 * 1024 * 1024)
     args = parser.parse_args()
     try:
-        revision_range = forward_revision_range(args.root.resolve(), args.base, args.head)
-        result = scan_history(
+        result = run_forward_guard(
             args.root.resolve(),
-            revisions=(revision_range,),
+            args.base,
+            args.head,
             max_object_bytes=args.max_object_bytes,
             max_path_bytes=args.max_path_bytes,
         )
