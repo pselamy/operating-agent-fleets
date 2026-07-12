@@ -24,13 +24,15 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "distribution" / "packages").mkdir(parents=True)
         (root / "guide").mkdir()
         (root / "diagrams").mkdir()
+        (root / "diagrams" / "chapter-05").mkdir()
         (root / "assets").mkdir()
         (root / "guide" / "05-throughput.md").write_text("# Chapter\n", encoding="utf-8")
         canonical = "https://selamy.dev/agent-fleets/05-throughput/"
         content = root / "distribution" / "packages" / "chapter-05-post.md"
         content.write_text(f"{distribution.DRAFT_MARKER}\nDraft. {canonical}\nWhat do you think?\n", encoding="utf-8")
-        (root / "diagrams" / "visual.svg").write_text("<svg/>", encoding="utf-8")
-        visual_digest = hashlib.sha256((root / "diagrams" / "visual.svg").read_bytes()).hexdigest()
+        visual_path = root / "diagrams" / "chapter-05" / "visual.light.svg"
+        visual_path.write_text("<svg/>", encoding="utf-8")
+        visual_digest = hashlib.sha256(visual_path.read_bytes()).hexdigest()
         (root / "assets" / "manifest.json").write_text(
             json.dumps({"schema_version": 1, "assets": []}), encoding="utf-8")
         (root / "diagrams" / "manifest.json").write_text(
@@ -39,7 +41,7 @@ class DistributionValidationTests(unittest.TestCase):
                 "renderer": {},
                 "diagrams": [{
                     "alt_text": "A bounded flow.",
-                    "exports": [{"path": "diagrams/visual.svg", "sha256": visual_digest}],
+                    "exports": [{"path": "diagrams/chapter-05/visual.light.svg", "sha256": visual_digest}],
                 }],
             }),
             encoding="utf-8",
@@ -49,7 +51,7 @@ class DistributionValidationTests(unittest.TestCase):
             "canonical_url": canonical, "source_revision": "a" * 40,
             "source_path": "guide/05-throughput.md",
             "content_path": "distribution/packages/chapter-05-post.md",
-            "visual_path": "diagrams/visual.svg", "alt_text": "A bounded flow.",
+            "visual_path": "diagrams/chapter-05/visual.light.svg", "alt_text": "A bounded flow.",
             "visual_sha256": visual_digest,
             "evidence_cutoff": "2026-07-11",
             "content_sha256": hashlib.sha256(content.read_bytes()).hexdigest(),
@@ -63,7 +65,8 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "distribution" / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 
     def validate(self, root: Path) -> int:
-        return distribution.validate_distribution(root, verify_git=False)
+        return distribution.validate_distribution(
+            root, verify_git=False, validate_visual_registries=False)
 
     def test_repository_manifest_and_valid_draft(self) -> None:
         self.assertEqual(
@@ -152,14 +155,16 @@ class DistributionValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly one visible question"):
             self.validate(root)
 
-        for ending in ("First? Second?", "No visible question.\n<!-- ? -->"):
+        for ending in ("First? Second?", "No visible question.\n<!-- ? -->", "No visible question.\n<!-- ?"):
             content.write_text(
                 f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\n{ending}\n",
                 encoding="utf-8",
             )
             manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
             self.write(root, manifest)
-            with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly one visible question"):
+            with self.assertRaisesRegex(
+                    distribution.DistributionValidationError,
+                    "exactly one visible question|additional HTML comment"):
                 self.validate(root)
 
         content.write_text(
@@ -194,7 +199,18 @@ class DistributionValidationTests(unittest.TestCase):
 
         manifest["packages"] = [manifest["packages"][0]]
         content = root / manifest["packages"][0]["content_path"]
-        for claim in ("H4 PASS", "Approved to publish", "This has been published"):
+        for claim in (
+            "H4: PASS",
+            "H4 has passed",
+            "Approved to publish",
+            "Approved for publication",
+            "Authorized for publication",
+            "Patrick approved publication",
+            "This has been published",
+            "Now published",
+            "This is live",
+            "Ready to publish",
+        ):
             content.write_text(
                 f"{distribution.DRAFT_MARKER}\n{claim}.\n"
                 f"{manifest['packages'][0]['canonical_url']}\nQuestion?\n",
@@ -222,17 +238,51 @@ class DistributionValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(distribution.DistributionValidationError, "cannot load reviewed visual registries"):
             self.validate(root)
 
+    def test_visual_registries_are_validated_and_paths_are_confined(self) -> None:
+        root, manifest = self.fixture()
+        with (mock.patch.object(distribution, "validate_asset_registry") as assets,
+              mock.patch.object(distribution, "validate_diagram_registry") as diagrams):
+            self.assertEqual(distribution.validate_distribution(root, verify_git=False), 1)
+            assets.assert_called_once_with(root)
+            diagrams.assert_called_once_with(root)
+
+        with mock.patch.object(
+                distribution, "validate_asset_registry", side_effect=ValueError("bad registry")):
+            with self.assertRaisesRegex(distribution.DistributionValidationError, "registry validation failed"):
+                distribution.validate_distribution(root, verify_git=False)
+
+        private = root / "private"
+        private.mkdir()
+        (private / "arbitrary.png").write_bytes(b"not an image")
+        digest = hashlib.sha256((private / "arbitrary.png").read_bytes()).hexdigest()
+        (root / "assets" / "manifest.json").write_text(
+            json.dumps({
+                "schema_version": 1,
+                "assets": [{"path": "private/arbitrary.png", "sha256": digest, "alt_text": "Forged."}],
+            }),
+            encoding="utf-8",
+        )
+        manifest["packages"][0].update(
+            visual_path="private/arbitrary.png", visual_sha256=digest, alt_text="Forged.")
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "invalid or duplicate entry"):
+            self.validate(root)
+
     def test_canonical_link_and_git_source_are_verified(self) -> None:
         root, manifest = self.fixture()
         source_bytes = (root / manifest["packages"][0]["source_path"]).read_bytes()
         visual_bytes = (root / manifest["packages"][0]["visual_path"]).read_bytes()
         with mock.patch.object(distribution.subprocess, "run", side_effect=[mock.Mock(returncode=0, stdout=source_bytes), mock.Mock(returncode=0, stdout=visual_bytes)]) as invoked:
-            self.assertEqual(distribution.validate_distribution(root), 1)
+            self.assertEqual(distribution.validate_distribution(
+                root, validate_visual_registries=False), 1)
         verified = [call.args[0][-1] for call in invoked.call_args_list]
-        self.assertEqual(verified, ["a" * 40 + ":guide/05-throughput.md", "a" * 40 + ":diagrams/visual.svg"])
+        self.assertEqual(verified, [
+            "a" * 40 + ":guide/05-throughput.md",
+            "a" * 40 + ":diagrams/chapter-05/visual.light.svg",
+        ])
         with mock.patch.object(distribution.subprocess, "run", side_effect=[mock.Mock(returncode=0, stdout=source_bytes), mock.Mock(returncode=0, stdout=b"different pinned visual")]):
             with self.assertRaisesRegex(distribution.DistributionValidationError, "blob digest differs"):
-                distribution.validate_distribution(root)
+                distribution.validate_distribution(root, validate_visual_registries=False)
         content = root / manifest["packages"][0]["content_path"]
         content.write_text(f"{distribution.DRAFT_MARKER}\nNo canonical link.\n", encoding="utf-8")
         manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()

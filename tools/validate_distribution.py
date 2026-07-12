@@ -10,6 +10,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    from tools.validate_assets import validate_assets as validate_asset_registry
+    from tools.validate_diagrams import validate_diagrams as validate_diagram_registry
+except ModuleNotFoundError:  # Direct script execution puts tools/ first on sys.path.
+    from validate_assets import validate_assets as validate_asset_registry
+    from validate_diagrams import validate_diagrams as validate_diagram_registry
+
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "distribution" / "manifest.json"
@@ -28,9 +35,17 @@ DATE = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]$")
 DRAFT_MARKER = "<!-- PRE-H4 DRAFT — DO NOT PUBLISH -->"
 LINKEDIN_POST_MAX_CHARACTERS = 3_000
 FORBIDDEN_PUBLICATION_CLAIM = re.compile(
-    r"\b(?:h4\s+(?:pass|approved)|approved\s+(?:for|to)\s+publish|"
-    r"authorized\s+(?:for|to)\s+publish|(?:is|was|has been)\s+published)\b",
+    r"(?:\bh4\b|"
+    r"\b(?:approved|authorized)\b.{0,40}\b(?:publish(?:ed|ing)?|publication)\b|"
+    r"\b(?:publish(?:ed|ing)?|publication)\b.{0,40}\b(?:approved|authorized)\b|"
+    r"\b(?:now|already|successfully)\s+(?:published|live)\b|"
+    r"\b(?:is|was|has\s+been|went)\s+(?:now\s+)?(?:published|live)\b|"
+    r"\bready\s+to\s+publish\b|\bpublish\s+now\b)",
     re.IGNORECASE,
+)
+REGISTERED_VISUAL_PATH = re.compile(
+    r"^(?:assets/(?:generated|templates|thumbnails)/[a-z0-9-]+\.(?:png|svg)|"
+    r"diagrams/chapter-[0-9]{2}/[a-z0-9.-]+\.(?:light|dark)\.svg)$"
 )
 
 
@@ -67,8 +82,14 @@ def load_manifest(path: Path = MANIFEST) -> dict:
     return value
 
 
-def _visual_registry(root: Path) -> dict[str, tuple[str, str]]:
+def _visual_registry(root: Path, *, validate_registries: bool = True) -> dict[str, tuple[str, str]]:
     """Return reviewed visual path -> (digest, alt text) from public manifests."""
+    if validate_registries:
+        try:
+            validate_asset_registry(root)
+            validate_diagram_registry(root)
+        except ValueError as exc:
+            raise DistributionValidationError("reviewed visual registry validation failed") from exc
     try:
         assets = json.loads((root / "assets" / "manifest.json").read_text(encoding="utf-8"))["assets"]
         diagrams = json.loads((root / "diagrams" / "manifest.json").read_text(encoding="utf-8"))["diagrams"]
@@ -84,7 +105,7 @@ def _visual_registry(root: Path) -> dict[str, tuple[str, str]]:
     except (KeyError, TypeError) as exc:
         raise DistributionValidationError("reviewed visual registry has an invalid shape") from exc
     for path, sha256, alt_text in candidates:
-        if (not isinstance(path, str) or not path.endswith((".png", ".svg"))
+        if (not isinstance(path, str) or REGISTERED_VISUAL_PATH.fullmatch(path) is None
                 or not isinstance(sha256, str) or DIGEST.fullmatch(sha256) is None
                 or not isinstance(alt_text, str) or not alt_text.strip() or path in registry):
             raise DistributionValidationError("reviewed visual registry has an invalid or duplicate entry")
@@ -103,9 +124,14 @@ def _verify_revision_path(root: Path, revision: str, path: str, *, expected_dige
         raise DistributionValidationError(f"source revision blob digest differs for declared path: {path}")
 
 
-def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
+def validate_distribution(
+    root: Path = ROOT,
+    *,
+    verify_git: bool = True,
+    validate_visual_registries: bool = True,
+) -> int:
     packages = load_manifest(root / "distribution" / "manifest.json")["packages"]
-    visual_registry = _visual_registry(root)
+    visual_registry = _visual_registry(root, validate_registries=validate_visual_registries)
     ids: set[str] = set()
     chapter_channels: set[tuple[int, str]] = set()
     content_paths: set[str] = set()
@@ -147,9 +173,12 @@ def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
             raise DistributionValidationError(f"package {package_id} lacks the mandatory pre-H4 marker")
         if content_text.count(package["canonical_url"]) != 1:
             raise DistributionValidationError(f"package {package_id} must contain its canonical URL exactly once")
-        if FORBIDDEN_PUBLICATION_CLAIM.search(content_text):
+        package_body = content_text[len(DRAFT_MARKER) + 1:]
+        if "<!--" in package_body or "-->" in package_body:
+            raise DistributionValidationError(f"package {package_id} contains an additional HTML comment")
+        if FORBIDDEN_PUBLICATION_CLAIM.search(package_body):
             raise DistributionValidationError(f"package {package_id} contains a forbidden publication claim")
-        visible_text = re.sub(r"<!--.*?-->", "", content_text, flags=re.DOTALL).strip()
+        visible_text = package_body.strip()
         if package["channel"] == "linkedin_post" and (
                 len(content_text) > LINKEDIN_POST_MAX_CHARACTERS
                 or visible_text.count("?") != 1 or not visible_text.endswith("?")):
