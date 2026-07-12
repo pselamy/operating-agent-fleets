@@ -204,6 +204,37 @@
       },
       "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.thumbnail-agent-lifecycle",
+      "role": "diagram_thumbnail",
+      "path": "assets/thumbnails/agent-lifecycle.png",
+      "media_type": "image/png",
+      "sha256": "3523aa61ef1825a5eee05f9c5490ccfc0d2fbd9d843b8d59eb385318f92d4f33",
+      "width": 1200,
+      "height": 627,
+      "alt_text": "Editorial summary of a software-capability lifecycle. A versioned charter enters bounded observation, receives a mandate-specific evidence envelope, and reaches a human-signed lifecycle decision. Suspected low value enters a safety-checked pause, restoration and feed probe, and evidence-backed reassessment. The lifecycle terms govern software capabilities, not employment or moral status.",
+      "created_at": "2026-07-12",
+      "provenance_type": "derived",
+      "creation_method": "Source-bound SVG composition converted locally by macOS sips via tools/render_diagram_thumbnail.py",
+      "generation_provider": null,
+      "generation_model": null,
+      "prompt": null,
+      "sources": [
+        {"path": "diagrams/chapter-07/agent-lifecycle-state-machine.light.svg", "sha256": "684d1746e10ea76d5267d8ff42e2fdc8d8121f9fc6d1cd91c72a54c1dd9c9f64"}
+      ],
+      "derivation": {
+        "contract_version": 1,
+        "renderer_path": "tools/render_diagram_thumbnail.py",
+        "renderer_sha256": "4309ae80acb273822f6674c4517e8ababe2ec472fa6cdf46760ceb7522bed342",
+        "parameters": {
+          "title": "Agents are a portfolio, not pets",
+          "takeaway": "Observe the charter; probe reversibly; require human-signed lifecycle decisions.",
+          "lanes": [["Versioned charter", "Bounded observation", "Evidence envelope", "Human-signed decision"], ["Suspected low value", "Safety-checked pause", "Restore and feed probe", "Reassess with evidence"]]
+        }
+      },
+      "text_policy": "source_controlled_overlay",
+      "claim_status": "conceptual_not_evidence"
     }
   ]
 }
