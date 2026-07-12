@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "assets": [
+    {
+      "id": "editorial.field-guide-hero",
+      "role": "field_guide_hero",
+      "path": "assets/generated/field-guide-hero.png",
+      "media_type": "image/png",
+      "sha256": "ae73af11612c95fa596714b717829d94460e71b5d2ea61c77646fe79d9db6aac",
+      "width": 1536,
+      "height": 1024,
+      "alt_text": "Abstract editorial illustration on a midnight-blue field. Six distinct geometric capability nodes connect through small bounded gateways to a stable layered ledger. Cyan and amber paths form two interlocking loops, suggesting durable work, verification, and system learning. The left side remains quiet for a separate title overlay.",
+      "created_at": "2026-07-11",
+      "creation_method": "OpenAI Codex built-in image generation",
+      "generation_provider": "OpenAI",
+      "generation_model": "Managed by Codex built-in image generation; model and version were not exposed",
+      "prompt": "Use case: stylized-concept\nAsset type: editorial field-guide cover and website hero background\nPrimary request: a sophisticated abstract illustration of durable work moving through a governed network of specialized AI agents, with evidence and feedback loops visible as luminous paths\nScene/backdrop: deep midnight navy field with layered architectural planes and subtle paper-like grain\nSubject: six distinct but non-anthropomorphic nodes orbiting a stable central ledger, connected through bounded gateways; two interlocking loops suggest work execution and system learning; small geometric checkpoints imply verification and human authority without depicting people or specific products\nStyle/medium: premium editorial vector-like digital illustration, restrained technical modernism, crisp geometry softened by atmospheric depth\nComposition/framing: wide 3:2 landscape, balanced focal structure centered slightly right, generous quiet negative space on the left for HTML title overlay, strong silhouette at thumbnail size\nLighting/mood: calm, precise, trustworthy, quietly ambitious\nColor palette: midnight navy, graphite, warm ivory, restrained cyan and amber accents\nConstraints: no text, letters, numerals, logos, trademarks, UI screenshots, maps, cryptocurrency imagery, finance symbols, private infrastructure, faces, humanoid robots, or watermarks; do not resemble a circuit-board stock image; keep all meaningful imagery within safe central margins",
+      "text_policy": "no_text_in_generated_pixels",
+      "claim_status": "conceptual_not_evidence"
+    }
+  ]
+}

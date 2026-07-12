@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pselamy/operating-agent-fleets/schemas/editorial-asset.schema.json",
+  "title": "Operating Agent Fleets editorial asset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "role", "path", "media_type", "sha256", "width", "height", "alt_text", "created_at", "creation_method", "generation_provider", "generation_model", "prompt", "text_policy", "claim_status"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^editorial\\.[a-z][a-z0-9-]*$"},
+    "role": {"enum": ["field_guide_hero", "conceptual_illustration", "social_card_template", "diagram_thumbnail"]},
+    "path": {"type": "string", "pattern": "^assets/(generated|thumbnails)/[a-z0-9-]+\\.png$"},
+    "media_type": {"const": "image/png"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "width": {"type": "integer", "minimum": 1, "maximum": 7680},
+    "height": {"type": "integer", "minimum": 1, "maximum": 7680},
+    "alt_text": {"type": "string", "minLength": 20},
+    "created_at": {"type": "string", "format": "date"},
+    "creation_method": {"type": "string", "minLength": 3},
+    "generation_provider": {"type": "string", "minLength": 2},
+    "generation_model": {"type": "string", "minLength": 3},
+    "prompt": {"type": "string", "minLength": 1},
+    "text_policy": {"enum": ["no_text_in_generated_pixels", "source_controlled_overlay", "not_applicable"]},
+    "claim_status": {"const": "conceptual_not_evidence"}
+  }
+}
