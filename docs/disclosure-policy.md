@@ -51,18 +51,20 @@ The exception boundary is fail-closed:
 5. No raw matched value, raw historical path, or restricted locator may be copied into an exception record, issue, log, or review artifact.
 6. The public result must be described as `PASS WITH RECORDED HISTORICAL EXCEPTIONS`, never as clean history or an unqualified privacy pass.
 
-The machine-readable proposed boundary is `evidence/audits/git-history-privacy-exceptions-2026-07-12.json`. It stores only aggregate categories and cryptographic bindings. While its status is `pending_second_h1`, it grants no exception and cannot satisfy a gate.
+The machine-readable proposed boundary is `evidence/audits/git-history-privacy-exceptions-2026-07-12.json`. It stores only aggregate categories and cryptographic bindings. Neither `pending_second_h1` nor `ready_for_second_h1` grants an exception by repository state alone.
 
 The pinned historical scanner's standalone CLI emits redacted-but-actionable object/line locators for a controlled local investigator. That diagnostic stream must not be persisted to public workflow logs, issues, artifacts, or publication records. The qualified comparator calls the same scanner implementation in-process and emits only aggregate counts plus finding-set and remote-ref-set digests.
 
 Activation sequence is fixed:
 
 1. merge no policy proposal while it remains unapproved;
-2. run the comparator against the fresh verified remote-ref set; pending status must report `MATCH BUT INACTIVE`, never pass;
-3. Patrick reviews the immutable candidate commit and exact activation diff, then records the second H1 decision outside repository-controlled state;
-4. the activation diff changes the boundary status to `active`, adds the external decision metadata, updates this status section and its tests, and changes nothing else;
-5. rerun the fresh comparator; only an active exact match may emit `PASS WITH RECORDED HISTORICAL EXCEPTIONS`;
-6. adversarially verify that the activation diff matches Patrick's decision before merge.
+2. run the comparator against the fresh verified remote-ref set and immutable current commit; a pending or ready candidate without external attestation must report `MATCH BUT NOT EXTERNALLY AUTHORIZED`, never pass;
+3. create one ready candidate whose diff from the reviewed pending policy base changes exactly the boundary record, this policy's status text, and the policy-binding test—no other path;
+4. adversarially verify the ready candidate, its real pending base, ancestry, exact changed-path set, and complete diff;
+5. Patrick reviews the immutable ready commit and records the exact second H1 statement outside repository-controlled state;
+6. write that externally supplied statement to a physically separate attestation file bound to the ready commit SHA; never commit the attestation to this repository;
+7. rerun the fresh comparator with the exact current SHA and external attestation; only the exact finding-set match, exact ready diff, and exact external decision together may emit `PASS WITH RECORDED HISTORICAL EXCEPTIONS`;
+8. merge the already approved ready commit without further source change.
 
 History rewriting is prohibited under this disposition. A future rewrite requires a separate impact inventory and explicit decision covering invalidated source pins, evidence revisions, pull requests, releases, backlinks, forks, and recovery procedures.
 
@@ -103,4 +105,4 @@ Deleting the latest file is not proof that disclosure has been contained.
 
 ## Current approval status
 
-Patrick recorded `H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.` The forward guard is merged. This immutable candidate policy and its exact activation diff must receive Patrick's second H1 decision before activation or merge. Pending status grants no exception. It permits public-safe structural work but does not authorize creating or using the confidential register, processing sensitive case material, deployment, or publication.
+Patrick recorded `H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.` The forward guard is merged. Repository state cannot activate the exception. A reviewed `ready_for_second_h1` commit plus Patrick's physically separate exact-commit attestation must pass the comparator before merge. Pending or unattested ready status grants no exception and does not authorize creating or using the confidential register, processing sensitive case material, deployment, or publication.

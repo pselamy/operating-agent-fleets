@@ -30,5 +30,5 @@
   "history_rewrite_authorized": false,
   "raw_values_recorded": false,
   "activation": null,
-  "activation_rule": "A second H1 decision must bind the exact candidate revision and activation diff. Activation changes status to active, adds the external decision record metadata, updates the policy status text and tests, and requires a successful fresh verified-remote comparison before merge."
+  "activation_rule": "A second H1 decision must bind the exact ready candidate revision through an external attestation. The ready candidate may differ from its pending policy base only at the declared activation paths. No repository field can activate the boundary by itself."
 }

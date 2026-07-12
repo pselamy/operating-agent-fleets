@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare a fresh verified-remote history scan with one closed exception identity set."""
+"""Compare fresh public history with a closed, externally authorized exception set."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 from collections import Counter
 from contextlib import contextmanager
@@ -23,7 +24,13 @@ else:
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BOUNDARY = ROOT / "evidence" / "audits" / "git-history-privacy-exceptions-2026-07-12.json"
+BOUNDARY_RELATIVE = Path("evidence/audits/git-history-privacy-exceptions-2026-07-12.json")
+BOUNDARY = ROOT / BOUNDARY_RELATIVE
+POLICY_RELATIVE = Path("docs/disclosure-policy.md")
+TEST_RELATIVE = Path("tests/test_history_exception_policy.py")
+ALLOWED_ACTIVATION_PATHS = tuple(sorted(map(str, (
+    BOUNDARY_RELATIVE, POLICY_RELATIVE, TEST_RELATIVE,
+))))
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 OID = re.compile(r"^[0-9a-f]{40}$")
 DATE = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]$")
@@ -35,33 +42,35 @@ BOUNDARY_FIELDS = {
     "raw_values_recorded", "activation", "activation_rule",
 }
 CATEGORY_FIELDS = {"rule", "object_type", "matches", "treatment"}
-ACTIVATION_FIELDS = {
-    "approved_candidate_revision", "decision_recorded_at", "decision_statement",
-    "decision_statement_sha256",
+ACTIVATION_FIELDS = {"policy_base_revision", "allowed_paths"}
+ATTESTATION_FIELDS = {
+    "schema_version", "decision_owner", "decision_recorded_at",
+    "activation_candidate_revision", "decision_statement", "decision_statement_sha256",
 }
 DECISION = (
     "H1 REVISE: preserve history; treat the two recorded audit categories as bounded "
     "historical exceptions; add a forward guard; do not rewrite."
 )
 ACTIVATION_RULE = (
-    "A second H1 decision must bind the exact candidate revision and activation diff. "
-    "Activation changes status to active, adds the external decision record metadata, "
-    "updates the policy status text and tests, and requires a successful fresh "
-    "verified-remote comparison before merge."
+    "A second H1 decision must bind the exact ready candidate revision through an external "
+    "attestation. The ready candidate may differ from its pending policy base only at the "
+    "declared activation paths. No repository field can activate the boundary by itself."
 )
 
 
 class BoundaryError(ValueError):
-    """The boundary or execution environment cannot support a trustworthy comparison."""
+    """The boundary, attestation, or execution environment is invalid."""
 
 
 class BoundaryMismatch(ValueError):
-    """The fresh finding identities differ from the closed historical exception set."""
+    """Fresh finding identities differ from the closed historical exception set."""
 
 
 @dataclass(frozen=True)
 class Comparison:
     status: str
+    authorized: bool
+    current_revision: str | None
     remote_ref_count: int
     remote_ref_set_sha256: str
     objects_scanned: int
@@ -87,32 +96,43 @@ def _replacement_objects_disabled():
             os.environ["GIT_NO_REPLACE_OBJECTS"] = previous
 
 
+def _git(root: Path, *args: str) -> bytes:
+    result = subprocess.run(["git", *args], cwd=root, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise BoundaryError("Git validation operation failed")
+    return result.stdout
+
+
 def _load_json(path: Path) -> dict:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise BoundaryError("cannot load exception boundary or audit record") from exc
+        raise BoundaryError("cannot load boundary, audit, or attestation") from exc
     if not isinstance(value, dict):
-        raise BoundaryError("exception boundary or audit record must be an object")
+        raise BoundaryError("boundary, audit, or attestation must be an object")
     return value
+
+
+def _string(value: object) -> bool:
+    return isinstance(value, str)
 
 
 def load_boundary(root: Path, path: Path) -> tuple[dict, dict]:
     boundary = _load_json(path)
     if set(boundary) != BOUNDARY_FIELDS or boundary.get("schema_version") != 1:
         raise BoundaryError("exception boundary has an invalid top-level shape")
-    if not isinstance(boundary["status"], str) or boundary["status"] not in {
-            "pending_second_h1", "active"}:
+    if not _string(boundary["status"]) or boundary["status"] not in {
+            "pending_second_h1", "ready_for_second_h1"}:
         raise BoundaryError("exception boundary has an invalid status")
     if (boundary["decision_owner"] != "Patrick Selamy"
-            or not isinstance(boundary["decision_recorded_at"], str)
+            or not _string(boundary["decision_recorded_at"])
             or DATE.fullmatch(boundary["decision_recorded_at"]) is None
             or boundary["decision_statement"] != DECISION):
         raise BoundaryError("exception boundary has invalid decision metadata")
     for field in ("audit_record_sha256", "scanner_sha256", "finding_set_sha256"):
-        if not isinstance(boundary[field], str) or SHA256.fullmatch(boundary[field]) is None:
+        if not _string(boundary[field]) or SHA256.fullmatch(boundary[field]) is None:
             raise BoundaryError("exception boundary has an invalid digest")
-    if (not isinstance(boundary["audited_revision"], str)
+    if (not _string(boundary["audited_revision"])
             or OID.fullmatch(boundary["audited_revision"]) is None):
         raise BoundaryError("exception boundary has an invalid audited revision")
     if (boundary["audit_record"] != "evidence/audits/git-history-privacy-2026-07-12.json"
@@ -136,6 +156,8 @@ def load_boundary(root: Path, path: Path) -> tuple[dict, dict]:
     for category in categories:
         if not isinstance(category, dict) or set(category) != CATEGORY_FIELDS:
             raise BoundaryError("exception category has an invalid field set")
+        if not _string(category["rule"]) or not _string(category["object_type"]):
+            raise BoundaryError("exception category has invalid scalar types")
         key = (category["rule"], category["object_type"])
         if (key in seen or key not in {
                 ("private hostname", "commit"), ("local file URL", "blob")}
@@ -154,22 +176,11 @@ def load_boundary(root: Path, path: Path) -> tuple[dict, dict]:
             raise BoundaryError("pending boundary cannot contain activation metadata")
     else:
         if not isinstance(activation, dict) or set(activation) != ACTIVATION_FIELDS:
-            raise BoundaryError("active boundary lacks exact activation metadata")
-        candidate = activation["approved_candidate_revision"]
-        expected_statement = (
-            "H1 PASS BOUNDED EXCEPTIONS: approve policy candidate " + candidate
-            + "; activate exact closed boundary; create confidential metadata register "
-            "controls only; H2/H3/H4 remain closed."
-        ) if isinstance(candidate, str) else ""
-        if (not isinstance(candidate, str) or OID.fullmatch(candidate) is None
-                or not isinstance(activation["decision_recorded_at"], str)
-                or DATE.fullmatch(activation["decision_recorded_at"]) is None
-                or activation["decision_statement"] != expected_statement
-                or not isinstance(activation["decision_statement_sha256"], str)
-                or SHA256.fullmatch(activation["decision_statement_sha256"]) is None
-                or hashlib.sha256(activation["decision_statement"].encode()).hexdigest()
-                != activation["decision_statement_sha256"]):
-            raise BoundaryError("active boundary has invalid activation metadata")
+            raise BoundaryError("ready boundary lacks exact activation metadata")
+        if (not _string(activation["policy_base_revision"])
+                or OID.fullmatch(activation["policy_base_revision"]) is None
+                or activation["allowed_paths"] != list(ALLOWED_ACTIVATION_PATHS)):
+            raise BoundaryError("ready boundary has invalid activation metadata")
 
     audit_path = root / boundary["audit_record"]
     audit = _load_json(audit_path)
@@ -195,9 +206,92 @@ def load_boundary(root: Path, path: Path) -> tuple[dict, dict]:
     return boundary, audit
 
 
-def compare(root: Path, remote: str, boundary_path: Path = BOUNDARY) -> Comparison:
+def _load_attestation(path: Path, current_revision: str) -> dict:
+    attestation = _load_json(path)
+    if set(attestation) != ATTESTATION_FIELDS or attestation.get("schema_version") != 1:
+        raise BoundaryError("external H1 attestation has an invalid shape")
+    expected_statement = (
+        "H1 PASS BOUNDED EXCEPTIONS: approve activation candidate " + current_revision
+        + "; activate exact closed boundary; create confidential metadata register controls "
+        "only; H2/H3/H4 remain closed."
+    )
+    if (attestation["decision_owner"] != "Patrick Selamy"
+            or not _string(attestation["decision_recorded_at"])
+            or DATE.fullmatch(attestation["decision_recorded_at"]) is None
+            or attestation["activation_candidate_revision"] != current_revision
+            or attestation["decision_statement"] != expected_statement
+            or not _string(attestation["decision_statement_sha256"])
+            or SHA256.fullmatch(attestation["decision_statement_sha256"]) is None
+            or hashlib.sha256(expected_statement.encode()).hexdigest()
+            != attestation["decision_statement_sha256"]):
+        raise BoundaryError("external H1 attestation is invalid or bound to another candidate")
+    return attestation
+
+
+def _validate_current_candidate(
+    root: Path,
+    boundary: dict,
+    boundary_path: Path,
+    current_revision: str,
+    attestation_path: Path | None,
+) -> bool:
+    if OID.fullmatch(current_revision) is None:
+        raise BoundaryError("current revision must be a full lowercase commit OID")
+    if _git(root, "cat-file", "-t", current_revision).decode("ascii").strip() != "commit":
+        raise BoundaryError("current revision is not a commit")
+    committed_boundary = _git(root, "show", f"{current_revision}:{BOUNDARY_RELATIVE}")
+    if committed_boundary != boundary_path.read_bytes():
+        raise BoundaryError("current revision does not contain the exact local boundary")
+    if boundary["status"] == "pending_second_h1":
+        if attestation_path is not None:
+            raise BoundaryError("pending candidate cannot consume an H1 attestation")
+        return False
+
+    base = boundary["activation"]["policy_base_revision"]
+    if _git(root, "cat-file", "-t", base).decode("ascii").strip() != "commit":
+        raise BoundaryError("policy base revision is not a commit")
+    ancestry = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", base, current_revision],
+        cwd=root, capture_output=True, check=False,
+    )
+    if ancestry.returncode != 0:
+        raise BoundaryError("policy base is not an ancestor of ready candidate")
+    changed = _git(root, "diff", "--name-only", "-z", base, current_revision).split(b"\0")
+    changed_paths = sorted(item.decode("utf-8") for item in changed if item)
+    if changed_paths != list(ALLOWED_ACTIVATION_PATHS):
+        raise BoundaryError("ready candidate differs outside the exact activation path set")
+    base_boundary_bytes = _git(root, "show", f"{base}:{BOUNDARY_RELATIVE}")
+    try:
+        base_boundary = json.loads(base_boundary_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise BoundaryError("policy base lacks a valid pending boundary") from exc
+    if (not isinstance(base_boundary, dict)
+            or base_boundary.get("status") != "pending_second_h1"
+            or base_boundary.get("activation") is not None):
+        raise BoundaryError("policy base is not the reviewed pending boundary")
+    if attestation_path is None:
+        return False
+    _load_attestation(attestation_path, current_revision)
+    return True
+
+
+def compare(
+    root: Path,
+    remote: str,
+    boundary_path: Path = BOUNDARY,
+    *,
+    current_revision: str | None = None,
+    attestation_path: Path | None = None,
+) -> Comparison:
     boundary, _ = load_boundary(root, boundary_path)
     with _replacement_objects_disabled():
+        authorized = False
+        if current_revision is not None:
+            authorized = _validate_current_candidate(
+                root, boundary, boundary_path, current_revision, attestation_path
+            )
+        elif attestation_path is not None:
+            raise BoundaryError("attestation requires an explicit current revision")
         refs = verify_remote_refs(root, remote)
         revisions = tuple(dict.fromkeys(refs.values()))
         result = scan_history(root, revisions=revisions)
@@ -218,11 +312,12 @@ def compare(root: Path, remote: str, boundary_path: Path = BOUNDARY) -> Comparis
             or finding_digest != boundary["finding_set_sha256"]
             or categories != expected_categories):
         raise BoundaryMismatch("fresh finding identity set differs from closed boundary")
-    ref_digest = hashlib.sha256(canonical(refs)).hexdigest()
     return Comparison(
         status=boundary["status"],
+        authorized=authorized,
+        current_revision=current_revision,
         remote_ref_count=len(refs),
-        remote_ref_set_sha256=ref_digest,
+        remote_ref_set_sha256=hashlib.sha256(canonical(refs)).hexdigest(),
         objects_scanned=result.objects_scanned,
         path_observations=result.paths_scanned,
         finding_count=len(findings),
@@ -234,22 +329,32 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--remote", required=True)
+    parser.add_argument("--current", required=True)
+    parser.add_argument("--attestation", type=Path)
     args = parser.parse_args()
     try:
-        result = compare(args.root.resolve(), args.remote, args.root.resolve() / BOUNDARY.relative_to(ROOT))
-    except BoundaryMismatch as exc:
-        print(f"Historical exception comparison REVISE: {exc}", file=sys.stderr)
+        root = args.root.resolve()
+        result = compare(
+            root,
+            args.remote,
+            root / BOUNDARY_RELATIVE,
+            current_revision=args.current,
+            attestation_path=args.attestation.resolve() if args.attestation else None,
+        )
+    except BoundaryMismatch:
+        print("Historical exception comparison REVISE: identity-set mismatch", file=sys.stderr)
         return 1
-    except (BoundaryError, OSError, UnicodeDecodeError, ValueError) as exc:
-        print(f"Historical exception comparison failed closed: {exc}", file=sys.stderr)
+    except (BoundaryError, OSError, UnicodeDecodeError, ValueError, TypeError):
+        print("Historical exception comparison failed closed: sanitized validation error", file=sys.stderr)
         return 2
     summary = (
-        f"refs={result.remote_ref_count}, ref_set_sha256={result.remote_ref_set_sha256}, "
-        f"objects={result.objects_scanned}, path_observations={result.path_observations}, "
-        f"findings={result.finding_count}, finding_set_sha256={result.finding_set_sha256}"
+        f"current={result.current_revision}, refs={result.remote_ref_count}, "
+        f"ref_set_sha256={result.remote_ref_set_sha256}, objects={result.objects_scanned}, "
+        f"path_observations={result.path_observations}, findings={result.finding_count}, "
+        f"finding_set_sha256={result.finding_set_sha256}"
     )
-    if result.status != "active":
-        print(f"Historical exception identities MATCH BUT INACTIVE: {summary}", file=sys.stderr)
+    if not result.authorized:
+        print(f"Historical exception identities MATCH BUT NOT EXTERNALLY AUTHORIZED: {summary}", file=sys.stderr)
         return 3
     print(f"PASS WITH RECORDED HISTORICAL EXCEPTIONS: {summary}")
     return 0

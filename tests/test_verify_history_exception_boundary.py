@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -46,41 +47,39 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
               mock.patch.object(verifier, "scan_history", return_value=self.recorded_result)):
             result = verifier.compare(ROOT, "origin")
         self.assertEqual(result.status, "pending_second_h1")
+        self.assertFalse(result.authorized)
         self.assertEqual(result.finding_count, 124)
         self.assertEqual(
             result.finding_set_sha256,
             "7a42c274bb021a4a07b08e10bb27a0d34019a839ded490fce8517205db852566",
         )
         stderr = io.StringIO()
+        current = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
         with (mock.patch.object(verifier, "verify_remote_refs", return_value=refs),
               mock.patch.object(verifier, "scan_history", return_value=self.recorded_result),
+              mock.patch.object(verifier, "_validate_current_candidate", return_value=False),
               mock.patch("sys.argv", [
                   "verify_history_exception_boundary.py", "--root", str(ROOT),
-                  "--remote", "origin",
+                  "--remote", "origin", "--current", current,
               ]),
               mock.patch("sys.stderr", stderr)):
             self.assertEqual(verifier.main(), 3)
         output = stderr.getvalue()
-        self.assertIn("MATCH BUT INACTIVE", output)
+        self.assertIn("MATCH BUT NOT EXTERNALLY AUTHORIZED", output)
         first_finding = self.recorded_result.findings[0]
         self.assertNotIn(first_finding.object_id[:12], output)
         self.assertNotIn(f":{first_finding.line}:", output)
 
-    def test_active_boundary_requires_external_decision_metadata(self) -> None:
+    def test_ready_boundary_has_closed_activation_shape_but_is_not_self_authorizing(self) -> None:
         boundary = self.boundary()
-        candidate = "a" * 40
-        statement = (
-            "H1 PASS BOUNDED EXCEPTIONS: approve policy candidate " + candidate
-            + "; activate exact closed boundary; create confidential metadata register "
-            "controls only; H2/H3/H4 remain closed."
-        )
         boundary.update(
-            status="active",
+            status="ready_for_second_h1",
             activation={
-                "approved_candidate_revision": candidate,
-                "decision_recorded_at": "2026-07-12",
-                "decision_statement": statement,
-                "decision_statement_sha256": hashlib.sha256(statement.encode()).hexdigest(),
+                "policy_base_revision": "a" * 40,
+                "allowed_paths": list(verifier.ALLOWED_ACTIVATION_PATHS),
             },
         )
         path = self.write_boundary(boundary)
@@ -88,10 +87,11 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
         with (mock.patch.object(verifier, "verify_remote_refs", return_value=refs),
               mock.patch.object(verifier, "scan_history", return_value=self.recorded_result)):
             result = verifier.compare(ROOT, "origin", path)
-        self.assertEqual(result.status, "active")
+        self.assertEqual(result.status, "ready_for_second_h1")
+        self.assertFalse(result.authorized)
 
         boundary["activation"] = None
-        with self.assertRaisesRegex(verifier.BoundaryError, "activation metadata"):
+        with self.assertRaisesRegex(verifier.BoundaryError, "ready boundary"):
             verifier.load_boundary(ROOT, self.write_boundary(boundary))
 
     def test_nested_boundary_is_closed_and_mismatch_fails(self) -> None:
@@ -159,9 +159,12 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
         pending_activation = self.boundary()
         pending_activation["activation"] = {}
         cases.append((pending_activation, "pending boundary"))
-        bad_active = self.boundary()
-        bad_active.update(status="active", activation={})
-        cases.append((bad_active, "activation metadata"))
+        bad_ready = self.boundary()
+        bad_ready.update(status="ready_for_second_h1", activation={})
+        cases.append((bad_ready, "ready boundary"))
+        scalar_type = self.boundary()
+        scalar_type["categories"][0]["rule"] = []
+        cases.append((scalar_type, "scalar types"))
         bad_audit_digest = self.boundary()
         bad_audit_digest["audit_record_sha256"] = "0" * 64
         cases.append((bad_audit_digest, "audit record digest"))
@@ -196,6 +199,7 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
 
         argv = [
             "verify_history_exception_boundary.py", "--root", str(ROOT), "--remote", "origin",
+            "--current", "a" * 40,
         ]
         with (mock.patch("sys.argv", argv),
               mock.patch.object(verifier, "compare", side_effect=verifier.BoundaryMismatch("changed"))):
@@ -204,7 +208,9 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
               mock.patch.object(verifier, "compare", side_effect=verifier.BoundaryError("bad"))):
             self.assertEqual(verifier.main(), 2)
         active = verifier.Comparison(
-            status="active",
+            status="ready_for_second_h1",
+            authorized=True,
+            current_revision="a" * 40,
             remote_ref_count=1,
             remote_ref_set_sha256="a" * 64,
             objects_scanned=3,
@@ -217,6 +223,137 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
               mock.patch("sys.stdout", stdout)):
             self.assertEqual(verifier.main(), 0)
         self.assertIn("PASS WITH RECORDED HISTORICAL EXCEPTIONS", stdout.getvalue())
+
+    def test_ready_candidate_requires_exact_diff_and_external_attestation(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name) / "repo"
+        root.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "synthetic@example.test"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "Synthetic Test"], cwd=root, check=True)
+        boundary_path = root / verifier.BOUNDARY_RELATIVE
+        policy_path = root / verifier.POLICY_RELATIVE
+        test_path = root / verifier.TEST_RELATIVE
+        for path in (boundary_path, policy_path, test_path):
+            path.parent.mkdir(parents=True, exist_ok=True)
+        pending = self.boundary()
+        boundary_path.write_text(json.dumps(pending, indent=2) + "\n", encoding="utf-8")
+        policy_path.write_text("pending policy\n", encoding="utf-8")
+        test_path.write_text("pending test\n", encoding="utf-8")
+        subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "pending policy"], cwd=root, check=True)
+        base = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+
+        ready = copy.deepcopy(pending)
+        ready.update(
+            status="ready_for_second_h1",
+            activation={
+                "policy_base_revision": base,
+                "allowed_paths": list(verifier.ALLOWED_ACTIVATION_PATHS),
+            },
+        )
+        boundary_path.write_text(json.dumps(ready, indent=2) + "\n", encoding="utf-8")
+        policy_path.write_text("ready policy\n", encoding="utf-8")
+        test_path.write_text("ready test\n", encoding="utf-8")
+        subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "ready policy"], cwd=root, check=True)
+        current = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        statement = (
+            "H1 PASS BOUNDED EXCEPTIONS: approve activation candidate " + current
+            + "; activate exact closed boundary; create confidential metadata register controls "
+            "only; H2/H3/H4 remain closed."
+        )
+        attestation = {
+            "schema_version": 1,
+            "decision_owner": "Patrick Selamy",
+            "decision_recorded_at": "2026-07-12",
+            "activation_candidate_revision": current,
+            "decision_statement": statement,
+            "decision_statement_sha256": hashlib.sha256(statement.encode()).hexdigest(),
+        }
+        attestation_path = Path(directory.name) / "external-attestation.json"
+        attestation_path.write_text(json.dumps(attestation), encoding="utf-8")
+        with verifier._replacement_objects_disabled():
+            self.assertTrue(verifier._validate_current_candidate(
+                root, ready, boundary_path, current, attestation_path
+            ))
+            self.assertFalse(verifier._validate_current_candidate(
+                root, ready, boundary_path, current, None
+            ))
+
+        forged = copy.deepcopy(attestation)
+        forged["activation_candidate_revision"] = base
+        forged_path = Path(directory.name) / "forged-attestation.json"
+        forged_path.write_text(json.dumps(forged), encoding="utf-8")
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "attestation"):
+                verifier._validate_current_candidate(root, ready, boundary_path, current, forged_path)
+
+        (root / "unapproved.md").write_text("extra\n", encoding="utf-8")
+        subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "unapproved extra"], cwd=root, check=True)
+        extra = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "outside"):
+                verifier._validate_current_candidate(root, ready, boundary_path, extra, None)
+
+        nonexistent = copy.deepcopy(ready)
+        nonexistent["activation"]["policy_base_revision"] = "f" * 40
+        boundary_path.write_text(json.dumps(nonexistent, indent=2) + "\n", encoding="utf-8")
+        subprocess.run(["git", "add", str(verifier.BOUNDARY_RELATIVE)], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "nonexistent base"], cwd=root, check=True)
+        bad_current = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "Git validation"):
+                verifier._validate_current_candidate(
+                    root, nonexistent, boundary_path, bad_current, None
+                )
+
+        blob = subprocess.run(
+            ["git", "hash-object", "-w", str(policy_path)],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        noncommit = copy.deepcopy(ready)
+        noncommit["activation"]["policy_base_revision"] = blob
+        boundary_path.write_text(json.dumps(noncommit, indent=2) + "\n", encoding="utf-8")
+        subprocess.run(["git", "add", str(verifier.BOUNDARY_RELATIVE)], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "noncommit base"], cwd=root, check=True)
+        noncommit_current = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "not a commit"):
+                verifier._validate_current_candidate(
+                    root, noncommit, boundary_path, noncommit_current, None
+                )
+
+        subprocess.run(["git", "checkout", "-q", "--orphan", "unrelated"], cwd=root, check=True)
+        subprocess.run(["git", "rm", "-q", "-rf", "."], cwd=root, check=True)
+        unrelated_ready = copy.deepcopy(ready)
+        for path in (boundary_path, policy_path, test_path):
+            path.parent.mkdir(parents=True, exist_ok=True)
+        boundary_path.write_text(json.dumps(unrelated_ready, indent=2) + "\n", encoding="utf-8")
+        policy_path.write_text("unrelated ready policy\n", encoding="utf-8")
+        test_path.write_text("unrelated ready test\n", encoding="utf-8")
+        subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "unrelated ready"], cwd=root, check=True)
+        unrelated_current = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "not an ancestor"):
+                verifier._validate_current_candidate(
+                    root, unrelated_ready, boundary_path, unrelated_current, None
+                )
 
 
 if __name__ == "__main__":
