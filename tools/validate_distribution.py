@@ -26,6 +26,7 @@ SOURCE = re.compile(r"^guide/(?P<chapter>[0-9]{2})-(?P<slug>[a-z0-9-]+)\.md$")
 CANONICAL = re.compile(r"^https://selamy\.dev/agent-fleets/(?P<chapter>[0-9]{2})-(?P<slug>[a-z0-9-]+)/$")
 DATE = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]$")
 DRAFT_MARKER = "<!-- PRE-H4 DRAFT — DO NOT PUBLISH -->"
+LINKEDIN_POST_MAX_CHARACTERS = 3_000
 
 
 class DistributionValidationError(ValueError):
@@ -106,7 +107,13 @@ def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
             raise DistributionValidationError(f"package {package_id} lacks the mandatory pre-H4 marker")
         if content_text.count(package["canonical_url"]) != 1:
             raise DistributionValidationError(f"package {package_id} must contain its canonical URL exactly once")
+        if package["channel"] == "linkedin_post" and (
+                len(content_text) > LINKEDIN_POST_MAX_CHARACTERS or not content_text.rstrip().endswith("?")):
+            raise DistributionValidationError(
+                f"package {package_id} must fit the LinkedIn post character limit and end with a question")
         visual = package["visual_path"]
+        if package["channel"] == "linkedin_post" and visual is None:
+            raise DistributionValidationError(f"package {package_id} LinkedIn post lacks its required visual")
         if visual is not None:
             if not isinstance(visual, str) or not visual.startswith(("diagrams/", "assets/")):
                 raise DistributionValidationError(f"package {package_id} has an unsafe visual path")

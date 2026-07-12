@@ -27,7 +27,7 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "guide" / "05-throughput.md").write_text("# Chapter\n", encoding="utf-8")
         canonical = "https://selamy.dev/agent-fleets/05-throughput/"
         content = root / "distribution" / "packages" / "chapter-05-post.md"
-        content.write_text(f"{distribution.DRAFT_MARKER}\nDraft. {canonical}\n", encoding="utf-8")
+        content.write_text(f"{distribution.DRAFT_MARKER}\nDraft. {canonical}\nWhat do you think?\n", encoding="utf-8")
         (root / "diagrams" / "visual.svg").write_text("<svg/>", encoding="utf-8")
         package = {
             "id": "chapter-05-post", "chapter": 5, "channel": "linkedin_post",
@@ -105,6 +105,7 @@ class DistributionValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(distribution.DistributionValidationError, message):
                 self.validate(root)
         candidate = copy.deepcopy(manifest)
+        candidate["packages"][0]["channel"] = "medium"
         candidate["packages"][0]["visual_path"] = None
         self.write(root, candidate)
         with self.assertRaisesRegex(distribution.DistributionValidationError, "without a visual"):
@@ -112,6 +113,43 @@ class DistributionValidationTests(unittest.TestCase):
         candidate["packages"][0].update(visual_path=None, alt_text=None, visual_sha256=None)
         self.write(root, candidate)
         self.assertEqual(self.validate(root), 1)
+
+    def test_linkedin_post_channel_contract(self) -> None:
+        root, manifest = self.fixture()
+        content = root / manifest["packages"][0]["content_path"]
+        content.write_text(
+            f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\nNo question.\n",
+            encoding="utf-8",
+        )
+        manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "character limit and end with a question"):
+            self.validate(root)
+
+        content.write_text(
+            f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\n"
+            + "x" * distribution.LINKEDIN_POST_MAX_CHARACTERS
+            + "?\n",
+            encoding="utf-8",
+        )
+        manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "character limit and end with a question"):
+            self.validate(root)
+
+        content.write_text(
+            f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\nQuestion?\n",
+            encoding="utf-8",
+        )
+        manifest["packages"][0].update(
+            visual_path=None,
+            alt_text=None,
+            visual_sha256=None,
+            content_sha256=hashlib.sha256(content.read_bytes()).hexdigest(),
+        )
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "required visual"):
+            self.validate(root)
 
     def test_canonical_link_and_git_source_are_verified(self) -> None:
         root, manifest = self.fixture()
