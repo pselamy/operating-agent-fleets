@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import re
 import struct
 import sys
+import tempfile
 import zlib
 from datetime import date
 from pathlib import Path
@@ -15,6 +17,8 @@ from xml.etree import ElementTree
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TRUSTED_RENDERER = ROOT / "tools" / "render_diagram_thumbnail.py"
+TRUSTED_RENDERER_SHA256 = hashlib.sha256(TRUSTED_RENDERER.read_bytes()).hexdigest()
 FIELDS = {
     "id", "role", "path", "media_type", "sha256", "width", "height",
     "alt_text", "created_at", "provenance_type", "creation_method",
@@ -44,6 +48,37 @@ SVG_ATTRIBUTES = {
 
 class AssetValidationError(ValueError):
     """An editorial asset violates the public visual contract."""
+
+
+def _replay_thumbnail(root: Path, asset: dict) -> bytes:
+    candidate = root / asset["derivation"]["renderer_path"]
+    try:
+        candidate_resolved = candidate.resolve(strict=True)
+    except OSError as exc:
+        raise AssetValidationError("registered thumbnail renderer is missing") from exc
+    if (candidate.is_symlink() or not candidate_resolved.is_relative_to(root.resolve())
+            or hashlib.sha256(candidate.read_bytes()).hexdigest() != TRUSTED_RENDERER_SHA256):
+        raise AssetValidationError("candidate thumbnail renderer differs from the trusted validator renderer")
+    spec = importlib.util.spec_from_file_location("oaf_thumbnail_replay", TRUSTED_RENDERER)
+    if spec is None or spec.loader is None:
+        raise AssetValidationError("cannot load the registered thumbnail renderer")
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+        parameters = asset["derivation"]["parameters"]
+        with tempfile.TemporaryDirectory(prefix="oaf-asset-replay-") as directory:
+            output = Path(directory) / "replayed.png"
+            module.render_thumbnail(
+                root / asset["sources"][0]["path"],
+                output,
+                title=parameters["title"],
+                takeaway=parameters["takeaway"],
+                lanes=tuple(tuple(lane) for lane in parameters["lanes"]),
+                renderer=module.locate_renderer(),
+            )
+            return output.read_bytes()
+    except (OSError, AttributeError, ValueError) as exc:
+        raise AssetValidationError("registered thumbnail replay failed") from exc
 
 
 def _png_dimensions(path: Path) -> tuple[int, int]:
@@ -128,7 +163,13 @@ def _svg_dimensions(path: Path) -> tuple[int, int]:
     return width, height
 
 
-def validate_assets(root: Path = ROOT) -> int:
+def validate_assets(
+    root: Path = ROOT,
+    *,
+    replay_derived: bool = False,
+    thumbnail_replayer=None,
+) -> int:
+    replay_thumbnail = thumbnail_replayer or _replay_thumbnail
     try:
         document = json.loads((root / "assets" / "manifest.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -236,9 +277,15 @@ def validate_assets(root: Path = ROOT) -> int:
             renderer_path = derivation["renderer_path"]
             renderer_digest = derivation["renderer_sha256"]
             renderer = root / renderer_path if renderer_path == "tools/render_diagram_thumbnail.py" else None
-            if (derivation["contract_version"] != 1 or renderer is None or not renderer.is_file()
+            try:
+                renderer_resolved = renderer.resolve(strict=True) if renderer is not None else None
+            except OSError:
+                renderer_resolved = None
+            if (derivation["contract_version"] != 1 or renderer is None or renderer_resolved is None
+                    or renderer.is_symlink() or not renderer_resolved.is_relative_to(root.resolve())
                     or not isinstance(renderer_digest, str) or DIGEST.fullmatch(renderer_digest) is None
-                    or hashlib.sha256(renderer.read_bytes()).hexdigest() != renderer_digest):
+                    or hashlib.sha256(renderer.read_bytes()).hexdigest() != renderer_digest
+                    or renderer_digest != TRUSTED_RENDERER_SHA256):
                 raise AssetValidationError(f"asset {asset_id} renderer provenance is invalid or stale")
             parameters = derivation["parameters"]
             if (not isinstance(parameters, dict) or set(parameters) != {"title", "takeaway", "lanes"}
@@ -249,6 +296,15 @@ def validate_assets(root: Path = ROOT) -> int:
                            or any(not isinstance(step, str) or not 2 <= len(step) <= 26 for step in lane)
                            for lane in parameters["lanes"])):
                 raise AssetValidationError(f"asset {asset_id} has invalid derivation parameters")
+            if replay_derived:
+                try:
+                    replayed = replay_thumbnail(root, asset)
+                except AssetValidationError:
+                    raise
+                except Exception as exc:
+                    raise AssetValidationError(f"asset {asset_id} replay failed closed") from exc
+                if hashlib.sha256(replayed).hexdigest() != asset["sha256"] or replayed != path.read_bytes():
+                    raise AssetValidationError(f"asset {asset_id} is not byte-reproducible on this registered runtime")
         else:
             raise AssetValidationError(f"asset {asset_id} has invalid provenance type")
     discovered = {
@@ -264,8 +320,12 @@ def validate_assets(root: Path = ROOT) -> int:
 
 
 def main() -> int:
+    replay = "--replay-derived" in sys.argv[1:]
+    if any(argument != "--replay-derived" for argument in sys.argv[1:]):
+        print("asset validation failed: unsupported argument", file=sys.stderr)
+        return 1
     try:
-        count = validate_assets()
+        count = validate_assets(replay_derived=replay)
     except AssetValidationError as exc:
         print(f"asset validation failed: {exc}", file=sys.stderr)
         return 1
