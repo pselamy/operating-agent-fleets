@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "pending_second_h1",
+  "decision_owner": "Patrick Selamy",
+  "decision_recorded_at": "2026-07-12",
+  "decision_statement": "H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.",
+  "audit_record": "evidence/audits/git-history-privacy-2026-07-12.json",
+  "audited_revision": "3c2448fa3ddab37051f95c04d522adecc0e39b12",
+  "scanner": "tools/privacy_history_scan.py",
+  "scanner_sha256": "b7ef325598913d477adce0c4c6cf8823f6d3855eac57b3dba7b21833f85dc02c",
+  "finding_count": 124,
+  "finding_set_sha256": "7a42c274bb021a4a07b08e10bb27a0d34019a839ded490fce8517205db852566",
+  "categories": [
+    {
+      "rule": "private hostname",
+      "object_type": "commit",
+      "matches": 123,
+      "treatment": "bounded historical exception only"
+    },
+    {
+      "rule": "local file URL",
+      "object_type": "blob",
+      "matches": 1,
+      "treatment": "bounded historical exception only"
+    }
+  ],
+  "forward_guard": "tools/privacy_forward_guard.py",
+  "preserve_history": true,
+  "history_rewrite_authorized": false,
+  "raw_values_recorded": false,
+  "activation_rule": "A second H1 decision must approve the exact policy revision and change only this status to active after validation."
+}

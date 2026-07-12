@@ -31,6 +31,30 @@ The following must not appear in this repository or its collaboration surfaces:
 
 Paraphrase is not sufficient when the structure, chronology, rare wording, or combination of details could identify the restricted source.
 
+## Bounded historical exceptions
+
+The forbidden-material rule remains absolute for every new commit and collaboration surface. It is not a claim that the already-public Git history is clean.
+
+The reproducible audit in `evidence/audits/git-history-privacy-2026-07-12.json` recorded 124 pre-existing findings bound to finding-set SHA-256 `7a42c274bb021a4a07b08e10bb27a0d34019a839ded490fce8517205db852566`:
+
+- 123 private-hostname matches in automatically generated historical commit metadata; and
+- one local-file-URL match in a historical synthetic validator fixture.
+
+Subject to Patrick's second H1 decision on this exact policy revision, those finding identities—not the pattern categories generally—may be treated as a closed historical exception set. The exception means only that history is preserved despite those already-public objects. It does not mean the objects are safe, private, removed, endorsed, or evidence for a field-guide claim.
+
+The exception boundary is fail-closed:
+
+1. The exact historical scanner and the immutable audit replay must remain valid.
+2. A fresh full verified-remote scan must reproduce the same 124 finding identities and finding-set digest with no additional finding.
+3. The forward guard must pass for each candidate branch between immutable full commit OIDs.
+4. Any new match—including the same rule or apparent value in a different object, line, or historical path—is outside the exception and returns `REVISE`.
+5. No raw matched value, raw historical path, or restricted locator may be copied into an exception record, issue, log, or review artifact.
+6. The public result must be described as `PASS WITH RECORDED HISTORICAL EXCEPTIONS`, never as clean history or an unqualified privacy pass.
+
+The machine-readable proposed boundary is `evidence/audits/git-history-privacy-exceptions-2026-07-12.json`. It stores only aggregate categories and cryptographic bindings. While its status is `pending_second_h1`, it grants no exception and cannot satisfy a gate.
+
+History rewriting is prohibited under this disposition. A future rewrite requires a separate impact inventory and explicit decision covering invalidated source pins, evidence revisions, pull requests, releases, backlinks, forks, and recovery procedures.
+
 ## Evidence states
 
 Every material claim must use one of these states:
@@ -68,4 +92,4 @@ Deleting the latest file is not proof that disclosure has been contained.
 
 ## Current approval status
 
-This policy is a proposal pending Human Gate H1. It permits public-safe structural work but does not authorize processing or publishing sensitive case material.
+Patrick recorded `H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.` The forward guard is merged. This exact bounded-exception revision remains pending Patrick's second H1 decision and grants no active exception until then. It permits public-safe structural work but does not authorize creating or using the confidential register, processing sensitive case material, deployment, or publication.
