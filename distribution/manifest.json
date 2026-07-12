@@ -58,20 +58,6 @@
       "content_sha256": "cc81c1ff40786c3c19389f42b5a3272746960c95dcc6a9a4be8fa1278f151c79"
     },
     {
-      "id": "chapter-03-skills-linkedin-post",
-      "chapter": 3,
-      "channel": "linkedin_post",
-      "canonical_url": "https://selamy.dev/agent-fleets/03-skills-and-context-routing/",
-      "source_revision": "c4d500ddf76178faf4b3c152b396b5642896c806",
-      "source_path": "guide/03-skills-and-context-routing.md",
-      "content_path": "distribution/packages/chapter-03-skills-linkedin-post.md",
-      "visual_path": "assets/thumbnails/mediated-collaboration.png",
-      "alt_text": "Editorial summary of mediated cross-plane collaboration. Durable work routes to a scoped capability, produces an evidence record, and receives independent verification without shared cognition.",
-      "visual_sha256": "92e7d7de5efb176dd02324f552012fa072ebdaf45c124e0b11ecc9aa15c1d348",
-      "evidence_cutoff": "2026-07-11",
-      "content_sha256": "fa23aa024869005e2b187cc5d3d2c41f942d9040426f4a788780167efc5238eb"
-    },
-    {
       "id": "chapter-05-throughput-linkedin-post",
       "chapter": 5,
       "channel": "linkedin_post",
@@ -83,7 +69,7 @@
       "alt_text": "Editorial summary of lane-scoped supersession. A new revision requests cancellation of safe validation, waits for termination, and then validates the latest source SHA. In a separate lane, an active mutation finishes before an artifact digest is authorized and the real target is verified.",
       "visual_sha256": "1f47cc36366e80fa0a32d0958238314d1eb17e6e79242a4b3be9a4516d46b158",
       "evidence_cutoff": "2026-07-11",
-      "content_sha256": "9acb1734064095f3b6e6ff9a0e82f01cb2f4a5c40af4fe6acab1b779f12208f3"
+      "content_sha256": "01f4374b374d7cd922bfd99ef253570fc13263f7d1bb19832997617090200657"
     },
     {
       "id": "chapter-06-memory-linkedin-post",
@@ -111,7 +97,7 @@
       "alt_text": "Editorial summary of a software-capability lifecycle. A versioned charter enters bounded observation, receives a mandate-specific evidence envelope, and reaches a human-signed lifecycle decision. Suspected low value enters a safety-checked pause, restoration and feed probe, and evidence-backed reassessment. The lifecycle terms govern software capabilities, not employment or moral status.",
       "visual_sha256": "3523aa61ef1825a5eee05f9c5490ccfc0d2fbd9d843b8d59eb385318f92d4f33",
       "evidence_cutoff": "2026-07-11",
-      "content_sha256": "d4d37da0beefab274a0a9a90ecb4874ccf2a90b43b9303db43f00b91b9afdaa9"
+      "content_sha256": "1355acf6f4cf1095436f3c24f184d1030d4d6a418cbf67170361e1bab12b121d"
     }
   ]
 }

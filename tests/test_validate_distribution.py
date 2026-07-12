@@ -24,18 +24,33 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "distribution" / "packages").mkdir(parents=True)
         (root / "guide").mkdir()
         (root / "diagrams").mkdir()
+        (root / "assets").mkdir()
         (root / "guide" / "05-throughput.md").write_text("# Chapter\n", encoding="utf-8")
         canonical = "https://selamy.dev/agent-fleets/05-throughput/"
         content = root / "distribution" / "packages" / "chapter-05-post.md"
         content.write_text(f"{distribution.DRAFT_MARKER}\nDraft. {canonical}\nWhat do you think?\n", encoding="utf-8")
         (root / "diagrams" / "visual.svg").write_text("<svg/>", encoding="utf-8")
+        visual_digest = hashlib.sha256((root / "diagrams" / "visual.svg").read_bytes()).hexdigest()
+        (root / "assets" / "manifest.json").write_text(
+            json.dumps({"schema_version": 1, "assets": []}), encoding="utf-8")
+        (root / "diagrams" / "manifest.json").write_text(
+            json.dumps({
+                "schema_version": 1,
+                "renderer": {},
+                "diagrams": [{
+                    "alt_text": "A bounded flow.",
+                    "exports": [{"path": "diagrams/visual.svg", "sha256": visual_digest}],
+                }],
+            }),
+            encoding="utf-8",
+        )
         package = {
             "id": "chapter-05-post", "chapter": 5, "channel": "linkedin_post",
             "canonical_url": canonical, "source_revision": "a" * 40,
             "source_path": "guide/05-throughput.md",
             "content_path": "distribution/packages/chapter-05-post.md",
             "visual_path": "diagrams/visual.svg", "alt_text": "A bounded flow.",
-            "visual_sha256": hashlib.sha256((root / "diagrams" / "visual.svg").read_bytes()).hexdigest(),
+            "visual_sha256": visual_digest,
             "evidence_cutoff": "2026-07-11",
             "content_sha256": hashlib.sha256(content.read_bytes()).hexdigest(),
         }
@@ -92,8 +107,8 @@ class DistributionValidationTests(unittest.TestCase):
         cases = (
             ("source_path", "README.md", "source or canonical"),
             ("content_path", "distribution/packages/missing.md", "missing package file"),
-            ("visual_path", "private/visual.svg", "unsafe visual"),
-            ("alt_text", "", "lacks alt text"),
+            ("visual_path", "assets/README.md", "not registered"),
+            ("alt_text", "Different alt text.", "differs from its registry"),
             ("visual_sha256", "0" * 64, "visual digest"),
             ("evidence_cutoff", "sometime", "evidence cutoff"),
             ("content_sha256", "0" * 64, "invalid or stale"),
@@ -123,7 +138,7 @@ class DistributionValidationTests(unittest.TestCase):
         )
         manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
         self.write(root, manifest)
-        with self.assertRaisesRegex(distribution.DistributionValidationError, "character limit and end with a question"):
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly one visible question"):
             self.validate(root)
 
         content.write_text(
@@ -134,8 +149,18 @@ class DistributionValidationTests(unittest.TestCase):
         )
         manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
         self.write(root, manifest)
-        with self.assertRaisesRegex(distribution.DistributionValidationError, "character limit and end with a question"):
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly one visible question"):
             self.validate(root)
+
+        for ending in ("First? Second?", "No visible question.\n<!-- ? -->"):
+            content.write_text(
+                f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\n{ending}\n",
+                encoding="utf-8",
+            )
+            manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+            self.write(root, manifest)
+            with self.assertRaisesRegex(distribution.DistributionValidationError, "exactly one visible question"):
+                self.validate(root)
 
         content.write_text(
             f"{distribution.DRAFT_MARKER}\n{manifest['packages'][0]['canonical_url']}\nQuestion?\n",
@@ -149,6 +174,52 @@ class DistributionValidationTests(unittest.TestCase):
         )
         self.write(root, manifest)
         with self.assertRaisesRegex(distribution.DistributionValidationError, "required visual"):
+            self.validate(root)
+
+    def test_duplicate_channel_content_and_publication_claims_fail(self) -> None:
+        root, manifest = self.fixture()
+        duplicate = copy.deepcopy(manifest["packages"][0])
+        duplicate["id"] = "chapter-05-post-second"
+        manifest["packages"].append(duplicate)
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "duplicates a chapter and channel"):
+            self.validate(root)
+
+        duplicate.update(chapter=6, source_path="guide/06-throughput.md")
+        (root / "guide" / "06-throughput.md").write_text("# Chapter\n", encoding="utf-8")
+        duplicate["canonical_url"] = "https://selamy.dev/agent-fleets/06-throughput/"
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "reuses a content path"):
+            self.validate(root)
+
+        manifest["packages"] = [manifest["packages"][0]]
+        content = root / manifest["packages"][0]["content_path"]
+        for claim in ("H4 PASS", "Approved to publish", "This has been published"):
+            content.write_text(
+                f"{distribution.DRAFT_MARKER}\n{claim}.\n"
+                f"{manifest['packages'][0]['canonical_url']}\nQuestion?\n",
+                encoding="utf-8",
+            )
+            manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+            self.write(root, manifest)
+            with self.assertRaisesRegex(distribution.DistributionValidationError, "forbidden publication claim"):
+                self.validate(root)
+
+    def test_visual_must_be_registered_with_reviewed_alt_text(self) -> None:
+        root, manifest = self.fixture()
+        (root / "assets" / "README.md").write_text("not an image", encoding="utf-8")
+        package = manifest["packages"][0]
+        package.update(
+            visual_path="assets/README.md",
+            visual_sha256=hashlib.sha256((root / "assets" / "README.md").read_bytes()).hexdigest(),
+            alt_text="x",
+        )
+        self.write(root, manifest)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "not registered"):
+            self.validate(root)
+
+        (root / "assets" / "manifest.json").write_text("{}", encoding="utf-8")
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "cannot load reviewed visual registries"):
             self.validate(root)
 
     def test_canonical_link_and_git_source_are_verified(self) -> None:

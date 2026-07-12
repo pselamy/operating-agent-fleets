@@ -7,7 +7,7 @@ Start with mandate thickness. A role such as “software engineer” or “chief
 
 Then evaluate evidence inside that mandate: consumed outcomes, correction burden, reliability, cost, consequence, and unique contribution. Low activity may mean rare but valuable work. High activity may be noise. Apparent weakness may come from a thin charter, broken inputs, or poor observability.
 
-Lifecycle decisions should therefore be reversible and explicit: invest, specialize, merge or subsume, repurpose, pause, or retire. Before an irreversible decision, restore the capability, feed representative work, and verify its consumers and dependencies.
+Lifecycle decisions should therefore be explicit: invest, specialize, merge or subsume, repurpose, pause, or retire. When suspected low value can be tested safely, use a reversible pause, restoration, and representative-work probe before reassessment. Do not pause capabilities whose safety, legal, custody, or irrecoverable obligations make the probe unsafe.
 
 The field guide provides a reference protocol without publishing private agent rankings or pretending it is already fleet-wide:
 

@@ -1,7 +1,7 @@
 <!-- PRE-H4 DRAFT — DO NOT PUBLISH -->
 ## “Run only the latest commit” is not a complete policy
 
-Latest where, and for what?
+The policy must first name where “latest” applies and which work is competing.
 
 High-throughput delivery needs a lane identity: the repository, target, and check or release family whose candidates actually compete. Within that lane, newer work can supersede waiting validation. Running validation may be canceled only when it is structurally side-effect-free and termination is acknowledged.
 
