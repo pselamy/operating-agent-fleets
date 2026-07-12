@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tools.export_site import ExportError, build_bundle, git_state, load_manifest, main, validate_entries
+from tools.export_site import ROOT, ExportError, build_bundle, git_state, load_manifest, main, validate_entries
 
 
 def entry(source: str, destination: str, channel: str = "preview") -> dict[str, str]:
@@ -31,6 +31,21 @@ class SiteExportTests(unittest.TestCase):
 
     def manifest(self, entries):
         return {"schema_version": 1, "entries": entries}
+
+    def test_repository_preview_includes_required_chapter_7_artifacts(self) -> None:
+        document = load_manifest(ROOT / "export" / "site-manifest.json")
+        entries = validate_entries(ROOT, document["entries"])
+        chapter_7 = {
+            item["source"]: item
+            for item in entries
+            if item["source"].startswith(("guide/07-", "diagrams/chapter-07/"))
+        }
+        self.assertEqual(set(chapter_7), {
+            "guide/07-agent-portfolio.md",
+            "diagrams/chapter-07/agent-lifecycle-state-machine.light.svg",
+            "diagrams/chapter-07/agent-lifecycle-state-machine.dark.svg",
+        })
+        self.assertTrue(all(item["channel"] == "preview" for item in chapter_7.values()))
 
     def test_preview_export_is_deterministic(self) -> None:
         manifest = self.manifest([entry("guide/chapter.md", "content/chapter.md")])

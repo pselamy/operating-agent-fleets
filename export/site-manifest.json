@@ -38,6 +38,12 @@
       "media_type": "text/markdown"
     },
     {
+      "source": "guide/07-agent-portfolio.md",
+      "destination": "content/07-agent-portfolio.md",
+      "channel": "preview",
+      "media_type": "text/markdown"
+    },
+    {
       "source": "docs/disclosure-policy.md",
       "destination": "content/disclosure-policy.md",
       "channel": "preview",
@@ -214,6 +220,18 @@
     {
       "source": "diagrams/chapter-06/memory-read-write-rebuild.dark.svg",
       "destination": "static/agent-fleets/diagrams/chapter-06/memory-read-write-rebuild.dark.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-07/agent-lifecycle-state-machine.light.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-07/agent-lifecycle-state-machine.light.svg",
+      "channel": "preview",
+      "media_type": "image/svg+xml"
+    },
+    {
+      "source": "diagrams/chapter-07/agent-lifecycle-state-machine.dark.svg",
+      "destination": "static/agent-fleets/diagrams/chapter-07/agent-lifecycle-state-machine.dark.svg",
       "channel": "preview",
       "media_type": "image/svg+xml"
     }
