@@ -16,7 +16,7 @@ Do not paste a compressed chapter, introduce a new factual claim, use engagement
 - Evidence cutoff:
 - Canonical URL:
 - Content SHA-256:
-- Visual source and alt text:
+- Visual source, SHA-256, and alt text:
 - Privacy review:
 - Claim-drift review:
 - H4 status: BLOCKED — this pre-H4 scaffold cannot represent approval. Do not publish.

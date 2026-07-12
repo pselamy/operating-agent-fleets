@@ -35,6 +35,7 @@ class DistributionValidationTests(unittest.TestCase):
             "source_path": "guide/05-throughput.md",
             "content_path": "distribution/packages/chapter-05-post.md",
             "visual_path": "diagrams/visual.svg", "alt_text": "A bounded flow.",
+            "visual_sha256": hashlib.sha256((root / "diagrams" / "visual.svg").read_bytes()).hexdigest(),
             "evidence_cutoff": "2026-07-11",
             "content_sha256": hashlib.sha256(content.read_bytes()).hexdigest(),
         }
@@ -90,6 +91,7 @@ class DistributionValidationTests(unittest.TestCase):
             ("content_path", "distribution/packages/missing.md", "missing package file"),
             ("visual_path", "private/visual.svg", "unsafe visual"),
             ("alt_text", "", "lacks alt text"),
+            ("visual_sha256", "0" * 64, "visual digest"),
             ("evidence_cutoff", "sometime", "evidence cutoff"),
             ("content_sha256", "0" * 64, "invalid or stale"),
         )
@@ -104,9 +106,21 @@ class DistributionValidationTests(unittest.TestCase):
         self.write(root, candidate)
         with self.assertRaisesRegex(distribution.DistributionValidationError, "without a visual"):
             self.validate(root)
+        candidate["packages"][0].update(visual_path=None, alt_text=None, visual_sha256=None)
+        self.write(root, candidate)
+        self.assertEqual(self.validate(root), 1)
 
     def test_canonical_link_and_git_source_are_verified(self) -> None:
         root, manifest = self.fixture()
+        source_bytes = (root / manifest["packages"][0]["source_path"]).read_bytes()
+        visual_bytes = (root / manifest["packages"][0]["visual_path"]).read_bytes()
+        with mock.patch.object(distribution.subprocess, "run", side_effect=[mock.Mock(returncode=0, stdout=source_bytes), mock.Mock(returncode=0, stdout=visual_bytes)]) as invoked:
+            self.assertEqual(distribution.validate_distribution(root), 1)
+        verified = [call.args[0][-1] for call in invoked.call_args_list]
+        self.assertEqual(verified, ["a" * 40 + ":guide/05-throughput.md", "a" * 40 + ":diagrams/visual.svg"])
+        with mock.patch.object(distribution.subprocess, "run", side_effect=[mock.Mock(returncode=0, stdout=source_bytes), mock.Mock(returncode=0, stdout=b"different pinned visual")]):
+            with self.assertRaisesRegex(distribution.DistributionValidationError, "blob digest differs"):
+                distribution.validate_distribution(root)
         content = root / manifest["packages"][0]["content_path"]
         content.write_text("No canonical link.\n", encoding="utf-8")
         manifest["packages"][0]["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
@@ -115,7 +129,7 @@ class DistributionValidationTests(unittest.TestCase):
             self.validate(root)
         with mock.patch.object(distribution.subprocess, "run", return_value=mock.Mock(returncode=1)):
             with self.assertRaisesRegex(distribution.DistributionValidationError, "does not contain"):
-                distribution._verify_source_revision(root, "a" * 40, "guide/05-throughput.md")
+                distribution._verify_revision_path(root, "a" * 40, "guide/05-throughput.md")
 
     def test_load_and_cli_failures(self) -> None:
         root, _ = self.fixture()

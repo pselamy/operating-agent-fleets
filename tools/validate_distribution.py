@@ -16,7 +16,7 @@ MANIFEST = ROOT / "distribution" / "manifest.json"
 PACKAGE_FIELDS = {
     "id", "chapter", "channel", "canonical_url", "source_revision",
     "source_path", "content_path", "visual_path", "alt_text",
-    "evidence_cutoff", "content_sha256",
+    "visual_sha256", "evidence_cutoff", "content_sha256",
 }
 CHANNELS = {"linkedin_newsletter", "linkedin_post", "medium"}
 ID = re.compile(r"^[a-z][a-z0-9-]*$")
@@ -60,13 +60,15 @@ def load_manifest(path: Path = MANIFEST) -> dict:
     return value
 
 
-def _verify_source_revision(root: Path, revision: str, source_path: str) -> None:
+def _verify_revision_path(root: Path, revision: str, path: str, *, expected_digest: str | None = None) -> None:
     result = subprocess.run(
-        ["git", "cat-file", "-e", f"{revision}:{source_path}"],
-        cwd=root, capture_output=True, text=True, check=False,
+        ["git", "show", f"{revision}:{path}"],
+        cwd=root, capture_output=True, check=False,
     )
     if result.returncode != 0:
-        raise DistributionValidationError("source revision does not contain the declared chapter")
+        raise DistributionValidationError(f"source revision does not contain declared path: {path}")
+    if expected_digest is not None and hashlib.sha256(result.stdout).hexdigest() != expected_digest:
+        raise DistributionValidationError(f"source revision blob digest differs for declared path: {path}")
 
 
 def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
@@ -96,7 +98,7 @@ def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
             raise DistributionValidationError(f"package {package_id} lacks an immutable source revision")
         _file(root, package["source_path"], "guide/")
         if verify_git:
-            _verify_source_revision(root, revision, package["source_path"])
+            _verify_revision_path(root, revision, package["source_path"])
         content = _file(root, package["content_path"], "distribution/packages/")
         if package["canonical_url"] not in content.read_text(encoding="utf-8"):
             raise DistributionValidationError(f"package {package_id} omits its canonical URL")
@@ -104,11 +106,16 @@ def validate_distribution(root: Path = ROOT, *, verify_git: bool = True) -> int:
         if visual is not None:
             if not isinstance(visual, str) or not visual.startswith(("diagrams/", "assets/")):
                 raise DistributionValidationError(f"package {package_id} has an unsafe visual path")
-            _file(root, visual, visual.split("/", 1)[0] + "/")
+            visual_file = _file(root, visual, visual.split("/", 1)[0] + "/")
             if not isinstance(package["alt_text"], str) or not package["alt_text"].strip():
                 raise DistributionValidationError(f"package {package_id} visual lacks alt text")
-        elif package["alt_text"] is not None:
-            raise DistributionValidationError(f"package {package_id} has alt text without a visual")
+            visual_digest = package["visual_sha256"]
+            if not isinstance(visual_digest, str) or DIGEST.fullmatch(visual_digest) is None or visual_digest != digest(visual_file):
+                raise DistributionValidationError(f"package {package_id} visual digest is invalid or stale")
+            if verify_git:
+                _verify_revision_path(root, revision, visual, expected_digest=visual_digest)
+        elif package["alt_text"] is not None or package["visual_sha256"] is not None:
+            raise DistributionValidationError(f"package {package_id} has visual metadata without a visual")
         if not isinstance(package["evidence_cutoff"], str) or DATE.fullmatch(package["evidence_cutoff"]) is None:
             raise DistributionValidationError(f"package {package_id} lacks an evidence cutoff")
         content_digest = package["content_sha256"]
