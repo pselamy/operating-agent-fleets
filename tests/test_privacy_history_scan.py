@@ -129,7 +129,12 @@ class PrivacyHistoryScanTests(unittest.TestCase):
         subprocess.run(["git", "checkout", "-q", primary], cwd=root, check=True)
         (root / "primary.txt").write_text("primary\n", encoding="utf-8")
         self.commit(root)
-        subprocess.run(["git", "merge", "-q", "--no-commit", "other"], cwd=root, check=True)
+        subprocess.run(
+            ["git", "merge", "-q", "--no-commit", "other"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        )
         restricted_name = "merge-only" + ".internal.txt"
         (root / restricted_name).write_text("safe payload\n", encoding="utf-8")
         self.commit(root, "merge with synthetic resolution path")
