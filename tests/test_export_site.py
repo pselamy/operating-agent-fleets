@@ -47,6 +47,20 @@ class SiteExportTests(unittest.TestCase):
         })
         self.assertTrue(all(item["channel"] == "preview" for item in chapter_7.values()))
 
+    def test_repository_preview_includes_exact_editorial_hero_surface(self) -> None:
+        document = load_manifest(ROOT / "export" / "site-manifest.json")
+        entries = validate_entries(ROOT, document["entries"])
+        editorial = {
+            item["source"]: item
+            for item in entries
+            if item["source"].startswith("assets/")
+        }
+        self.assertEqual(set(editorial), {
+            "assets/manifest.json",
+            "assets/generated/field-guide-hero.png",
+        })
+        self.assertTrue(all(item["channel"] == "preview" for item in editorial.values()))
+
     def test_preview_export_is_deterministic(self) -> None:
         manifest = self.manifest([entry("guide/chapter.md", "content/chapter.md")])
         first = Path(self.directory.name) / "first"

@@ -104,6 +104,18 @@
       "media_type": "application/json"
     },
     {
+      "source": "assets/manifest.json",
+      "destination": "data/editorial-assets/manifest.json",
+      "channel": "preview",
+      "media_type": "application/json"
+    },
+    {
+      "source": "assets/generated/field-guide-hero.png",
+      "destination": "static/agent-fleets/editorial/field-guide-hero.png",
+      "channel": "preview",
+      "media_type": "image/png"
+    },
+    {
       "source": "diagrams/chapter-01/system-context.light.svg",
       "destination": "static/agent-fleets/diagrams/chapter-01/system-context.light.svg",
       "channel": "preview",
