@@ -29,7 +29,7 @@ stateDiagram-v2
     ProbeReady --> Probe: preregister outcomes and rollback
     Probe --> EvidenceReview: add probe or exclusion evidence
 
-    state Decision <<choice>>
+    state "Signed decision record" as Decision
     DecisionPending --> Decision: human signs immutable decision record
     Decision --> InvestPlan: invest
     Decision --> SpecializePlan: specialize
