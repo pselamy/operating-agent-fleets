@@ -52,7 +52,7 @@ class AssetValidationTests(unittest.TestCase):
         (root / "assets" / "manifest.json").write_text(json.dumps(document), encoding="utf-8")
 
     def test_repository_asset_and_valid_fixture(self) -> None:
-        self.assertEqual(assets.validate_assets(), 2)
+        self.assertEqual(assets.validate_assets(), 4)
         root, _ = self.fixture()
         self.assertEqual(assets.validate_assets(root), 1)
 

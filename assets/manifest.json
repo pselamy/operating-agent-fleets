@@ -36,6 +36,42 @@
       "prompt": null,
       "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.two-coupled-loops",
+      "role": "conceptual_illustration",
+      "path": "assets/generated/two-coupled-loops-concept.png",
+      "media_type": "image/png",
+      "sha256": "644e29ae065e3df5a896cb10161e5fad9b416d7ed2ff7f1e7e6b4fbb4c070f2f",
+      "width": 1536,
+      "height": 1024,
+      "alt_text": "Abstract editorial illustration of two adjacent coupled cycles joined at an ivory threshold on a midnight-blue field. Cyan geometric work artifacts move through the left cycle toward the evidence-and-authority threshold. Amber constraint shapes emerge into a separate learning cycle on the right. The image is conceptual metaphor, not a process diagram or deployed architecture.",
+      "created_at": "2026-07-12",
+      "provenance_type": "generated",
+      "creation_method": "OpenAI Codex built-in image generation",
+      "generation_provider": "OpenAI",
+      "generation_model": "Managed by Codex built-in image generation; model and version were not exposed",
+      "prompt": "Use case: stylized-concept\nAsset type: public-safe conceptual illustration for a technical field-guide chapter\nPrimary request: illustrate two coupled cycles—one completing durable work, the other turning observed outcomes into safer system behavior—without using a literal flowchart\nScene/backdrop: deep midnight navy with subtle paper grain and spacious editorial composition\nSubject: two interlocking luminous circular paths, cyan for a work cycle and amber for a learning cycle; small abstract geometric artifacts travel around the cyan loop, pass through a bright evidence checkpoint, then seed reviewed constraint shapes on the amber loop; a single calm ivory threshold between loops suggests bounded human authority\nStyle/medium: premium editorial vector-like digital illustration, restrained technical modernism, crisp geometric forms with soft atmospheric depth\nComposition/framing: wide 3:2 landscape, central interlocking-loop motif, generous margins, strong silhouette at thumbnail size\nLighting/mood: precise, calm, trustworthy, reflective\nColor palette: midnight navy, graphite, warm ivory, restrained cyan and amber\nConstraints: no text, letters, numbers, labels, logos, trademarks, UI screenshots, maps, finance or cryptocurrency symbols, infrastructure products, faces, hands, humanoid robots, circuit-board clichés, or watermarks; do not imply direct peer-to-peer cognition or automatic authority expansion; keep all meaningful imagery inside safe central margins",
+      "text_policy": "no_text_in_generated_pixels",
+      "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.mediated-coordination",
+      "role": "conceptual_illustration",
+      "path": "assets/generated/mediated-coordination-concept.png",
+      "media_type": "image/png",
+      "sha256": "519ec886b311f698a790841a422f6e9a525d5b61695e01665e13a14eccab5f7c",
+      "width": 1536,
+      "height": 1024,
+      "alt_text": "Abstract editorial illustration using an uneven, non-exhaustive set of neutral document, tool, queue, and geometric capability examples around a durable archival ledger. Directional cyan and amber paths pass through gateways and artifact tiles rather than connecting examples directly. A verification lens and ivory authority threshold remain separate. The arrangement and count are editorial composition, not fleet inventory, deployed topology, central orchestration, peer connectivity, or shared cognition.",
+      "created_at": "2026-07-12",
+      "provenance_type": "generated",
+      "creation_method": "OpenAI Codex built-in image generation followed by a built-in image edit",
+      "generation_provider": "OpenAI",
+      "generation_model": "Managed by Codex built-in image generation; model and version were not exposed",
+      "prompt": "ORIGINAL GENERATION PROMPT\nUse case: stylized-concept\nAsset type: public-safe conceptual illustration for a technical field-guide chapter\nPrimary request: illustrate mediated coordination among specialized AI capabilities through durable, auditable shared substrates rather than direct mind-to-mind communication\nScene/backdrop: deep midnight navy with subtle paper grain and layered architectural depth\nSubject: several distinct abstract geometric capability nodes arranged around a central durable work ledger; every exchange passes through visible bounded gateways, stamped artifact tiles, and an independent verification lens; paths are directional and separated, with no direct node-to-node connection; one small warm ivory threshold indicates retained human authority\nStyle/medium: premium editorial vector-like digital illustration, restrained technical modernism, crisp geometry with soft atmospheric depth\nComposition/framing: wide 3:2 landscape, central ledger and verification motif, balanced nodes around it, generous margins, clear at thumbnail size\nLighting/mood: precise, collaborative, accountable, calm\nColor palette: midnight navy, graphite, warm ivory, restrained cyan and amber accents\nConstraints: no text, letters, numbers, labels, logos, trademarks, UI screenshots, maps, finance or cryptocurrency symbols, infrastructure products, faces, hands, humanoid robots, brains, telepathy imagery, mesh-network cliché, circuit boards, or watermarks; do not imply shared cognition, hive mind, direct peer connectivity, or automatic authority; keep all meaningful imagery inside safe central margins\n\nEDIT PROMPT\nEdit this existing editorial illustration while preserving its midnight-navy palette, central durable ledger, bounded gateways, artifact tiles, directional cyan/amber paths, verification lens, ivory authority threshold, wide 3:2 composition, texture, and overall visual quality. Make only these conceptual corrections: remove every finance-, trading-, token-, gem-, and performance-chart-adjacent motif; replace them with neutral document and tool motifs. Break the impression of an exact six-agent hub-and-spoke inventory by recomposing the outer motifs as an intentionally illustrative, uneven set of example capability clusters plus partial artifact fragments. Keep all exchanges mediated and preserve no direct node-to-node paths. Make the central ledger flatter and more archival so it does not read as a central orchestrator. No text, labels, finance symbols, charts, coins, tokens, gemstones, people, robots, brains, network clichés, or watermarks. Do not imply shared cognition, hive mind, direct peer connectivity, automatic authority, a verified node count, deployed topology, or a central orchestrator.",
+      "text_policy": "no_text_in_generated_pixels",
+      "claim_status": "conceptual_not_evidence"
     }
   ]
 }
