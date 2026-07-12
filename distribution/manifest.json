@@ -111,7 +111,7 @@
       "alt_text": null,
       "visual_sha256": null,
       "evidence_cutoff": "2026-07-11",
-      "content_sha256": "14b84d75fbe730e03e3d15b263fdeb7ad14f8a159fb8e107b63fb0307331ee1d"
+      "content_sha256": "fcc67d5d20d035926c029a5c2fef92daeb860f8c0f625ee1092adacebe6ae8a6"
     },
     {
       "id": "chapter-06-memory-medium-import",
@@ -125,7 +125,7 @@
       "alt_text": null,
       "visual_sha256": null,
       "evidence_cutoff": "2026-07-11",
-      "content_sha256": "3d4dbcb488d854e1000396e4ff347a81eac986f90f2c4e30957d0b5fc4460df6"
+      "content_sha256": "61f778c48e1bb24a48435b7f1d8e0883998838c141281068d49dbd0b2d0e96eb"
     },
     {
       "id": "chapter-07-portfolio-medium-import",
@@ -139,7 +139,7 @@
       "alt_text": null,
       "visual_sha256": null,
       "evidence_cutoff": "2026-07-11",
-      "content_sha256": "adc335c09c17f6490943d145926ad5adf67e5fd9a98903ae6ba5f3d84e78ee57"
+      "content_sha256": "300b49c748b2db4555ec68564bb1bd35c9eac4daf9c7d65a1f58b6af6b792f99"
     }
   ]
 }

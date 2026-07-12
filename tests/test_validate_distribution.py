@@ -26,7 +26,7 @@ class DistributionValidationTests(unittest.TestCase):
         (root / "diagrams").mkdir()
         (root / "diagrams" / "chapter-05").mkdir()
         (root / "assets").mkdir()
-        (root / "guide" / "05-throughput.md").write_text("# Chapter\n", encoding="utf-8")
+        (root / "guide" / "05-throughput.md").write_text("# 5. Chapter\n", encoding="utf-8")
         canonical = "https://selamy.dev/agent-fleets/05-throughput/"
         content = root / "distribution" / "packages" / "chapter-05-post.md"
         content.write_text(f"{distribution.DRAFT_MARKER}\nDraft. {canonical}\nWhat do you think?\n", encoding="utf-8")
@@ -191,7 +191,7 @@ class DistributionValidationTests(unittest.TestCase):
             self.validate(root)
 
         duplicate.update(chapter=6, source_path="guide/06-throughput.md")
-        (root / "guide" / "06-throughput.md").write_text("# Chapter\n", encoding="utf-8")
+        (root / "guide" / "06-throughput.md").write_text("# 6. Chapter\n", encoding="utf-8")
         duplicate["canonical_url"] = "https://selamy.dev/agent-fleets/06-throughput/"
         self.write(root, manifest)
         with self.assertRaisesRegex(distribution.DistributionValidationError, "reuses a content path"):
@@ -274,30 +274,32 @@ class DistributionValidationTests(unittest.TestCase):
         package.update(channel="medium", visual_path=None, alt_text=None, visual_sha256=None)
         content = root / package["content_path"]
 
-        def write_medium(*, import_mode: str, article_boundary: str = "not the article body") -> None:
-            content.write_text(
-                f"{distribution.DRAFT_MARKER}\n"
-                f"**Canonical URL:** {package['canonical_url']}\n"
-                f"**Pinned field-guide revision:** `{package['source_revision']}`\n"
-                f"**Pinned source path:** `{package['source_path']}`\n"
-                f"**Evidence cutoff:** {package['evidence_cutoff']}\n"
-                f"**Import mode:** {import_mode}\n"
-                "## Stop conditions\nStop.\n"
-                "## Import and verification procedure\nVerify.\n"
-                f"This is {article_boundary}.\n",
-                encoding="utf-8",
-            )
+        def write_medium(value: str) -> None:
+            content.write_text(value, encoding="utf-8")
             package["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
             self.write(root, manifest)
 
-        exact_mode = "Medium's canonical-URL importer; do not paste or maintain a second article copy."
-        write_medium(import_mode=exact_mode)
+        exact = distribution._medium_envelope(package, "Chapter")
+        write_medium(exact)
         self.assertEqual(self.validate(root), 1)
 
-        for import_mode, boundary in (("copy and paste", "not the article body"), (exact_mode, "a duplicate article")):
-            write_medium(import_mode=import_mode, article_boundary=boundary)
+        mutations = (
+            exact.replace("Canonical title:** Chapter", "Canonical title:** Wrong title"),
+            exact.replace("independently confirmed indexed with observer and timestamp", "indexable"),
+            exact.replace("Stop if Patrick's exact-preview decision is absent", "Continue without a human decision"),
+            exact.replace("independently retrieve the Medium page", "trust the workflow status"),
+            exact + "\n# Duplicate article body\n",
+            exact.replace("not the article body", "not the article body; import completed successfully"),
+        )
+        for candidate in mutations:
+            write_medium(candidate)
             with self.assertRaisesRegex(distribution.DistributionValidationError, "delayed Medium import contract"):
                 self.validate(root)
+
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "title disagrees"):
+            distribution._chapter_title(b"# 6. Wrong chapter\n", 5)
+        with self.assertRaisesRegex(distribution.DistributionValidationError, "UTF-8 title"):
+            distribution._chapter_title(b"\xff", 5)
 
     def test_canonical_link_and_git_source_are_verified(self) -> None:
         root, manifest = self.fixture()
