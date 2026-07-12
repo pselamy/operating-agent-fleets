@@ -42,6 +42,20 @@
       "visual_sha256": "77e9064da69156f043dd298e5782027ba954f625d6ada55c2a62d0aacd65133d",
       "evidence_cutoff": "2026-07-11",
       "content_sha256": "670d88449fae3cbbd55b16b8ee8d21d85766ff304237070bc8c8ec4080265c03"
+    },
+    {
+      "id": "chapter-07-portfolio-linkedin-newsletter",
+      "chapter": 7,
+      "channel": "linkedin_newsletter",
+      "canonical_url": "https://selamy.dev/agent-fleets/07-agent-portfolio/",
+      "source_revision": "f3ed890e5cf023810e61404f6f87152f0b29c09f",
+      "source_path": "guide/07-agent-portfolio.md",
+      "content_path": "distribution/packages/chapter-07-portfolio-linkedin-newsletter.md",
+      "visual_path": "assets/thumbnails/agent-lifecycle.png",
+      "alt_text": "Editorial summary of a software-capability lifecycle. A versioned charter enters bounded observation, receives a mandate-specific evidence envelope, and reaches a human-signed lifecycle decision. Suspected low value enters a safety-checked pause, restoration and feed probe, and evidence-backed reassessment. The lifecycle terms govern software capabilities, not employment or moral status.",
+      "visual_sha256": "3523aa61ef1825a5eee05f9c5490ccfc0d2fbd9d843b8d59eb385318f92d4f33",
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "cc81c1ff40786c3c19389f42b5a3272746960c95dcc6a9a4be8fa1278f151c79"
     }
   ]
 }
