@@ -173,6 +173,37 @@
       },
       "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.thumbnail-memory-and-provenance",
+      "role": "diagram_thumbnail",
+      "path": "assets/thumbnails/memory-and-provenance.png",
+      "media_type": "image/png",
+      "sha256": "77e9064da69156f043dd298e5782027ba954f625d6ada55c2a62d0aacd65133d",
+      "width": 1200,
+      "height": 627,
+      "alt_text": "Editorial summary of memory with provenance. A read finds a semantic candidate, resolves its versioned source, verifies scope and cutoff, and uses source-backed context. A write updates the source before indexing an immutable revision; correction applies an active tombstone before rebuilding and verifying the derived index.",
+      "created_at": "2026-07-12",
+      "provenance_type": "derived",
+      "creation_method": "Source-bound SVG composition converted locally by macOS sips via tools/render_diagram_thumbnail.py",
+      "generation_provider": null,
+      "generation_model": null,
+      "prompt": null,
+      "sources": [
+        {"path": "diagrams/chapter-06/memory-read-write-rebuild.light.svg", "sha256": "fca523d462fb7e5fbd0891aa28c171df91df4401121b883a963c536c9dbbe66d"}
+      ],
+      "derivation": {
+        "contract_version": 1,
+        "renderer_path": "tools/render_diagram_thumbnail.py",
+        "renderer_sha256": "4309ae80acb273822f6674c4517e8ababe2ec472fa6cdf46760ceb7522bed342",
+        "parameters": {
+          "title": "Memory without surrendering provenance",
+          "takeaway": "Recall is derived; versioned sources govern truth, scope, correction, and rebuild.",
+          "lanes": [["Find candidate", "Resolve source", "Verify scope and cutoff", "Use source-backed context"], ["Update source first", "Index immutable revision", "Apply active tombstone", "Rebuild and verify"]]
+        }
+      },
+      "text_policy": "source_controlled_overlay",
+      "claim_status": "conceptual_not_evidence"
     }
   ]
 }
