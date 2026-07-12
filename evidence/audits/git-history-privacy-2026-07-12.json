@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/pselamy/operating-agent-fleets",
+  "audited_revision": "7c28b36f6caca6d893a05f6f171d454c6bc59801",
+  "audited_at": "2026-07-12",
+  "revision_set": "--all",
+  "clone_shallow": false,
+  "remote_branch_heads": 9,
+  "fetched_remote_branch_heads": 9,
+  "reachable_objects_examined": 497,
+  "payload_bytes_scanned": 10377464,
+  "scanner": "tools/privacy_history_scan.py",
+  "command": "python3 tools/privacy_history_scan.py --revision=--all",
+  "result": "REVISE",
+  "finding_count": 126,
+  "finding_summary": [
+    {
+      "rule": "private hostname",
+      "object_type": "commit",
+      "matches": 125,
+      "unique_objects": 83,
+      "classification": "Automatically generated local-host committer metadata; still forbidden by the current absolute disclosure policy."
+    },
+    {
+      "rule": "local file URL",
+      "object_type": "blob",
+      "matches": 1,
+      "unique_objects": 1,
+      "classification": "Historical synthetic validator fixture; still forbidden by the current absolute disclosure policy."
+    }
+  ],
+  "zero_match_rules": [
+    "private-key material",
+    "GitHub credential",
+    "AWS access key",
+    "local macOS path",
+    "local Linux path",
+    "private IPv4 address",
+    "embedded URL credential",
+    "US taxpayer identifier",
+    "Ethereum address",
+    "Telegram locator",
+    "Telegram chat identifier",
+    "raw transcript envelope"
+  ],
+  "decision": "Do not claim clean Git history. Do not rewrite public history or create a permissive baseline without explicit disclosure approval and a reviewed remediation decision.",
+  "limitations": [
+    "Pattern scanning cannot prove the absence of every secret or sensitive value.",
+    "The scan does not perform OCR or semantic inspection of binary image content.",
+    "The scan covers objects reachable from fetched local refs, not unreachable objects, forks, caches, workflow logs, release assets, or deleted collaboration surfaces.",
+    "A zero-match rule means only that this scanner found no matching pattern at this cutoff."
+  ]
+}
