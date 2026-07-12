@@ -16,6 +16,8 @@
       "generation_provider": "OpenAI",
       "generation_model": "Managed by Codex built-in image generation; model and version were not exposed",
       "prompt": "Use case: stylized-concept\nAsset type: editorial field-guide cover and website hero background\nPrimary request: a sophisticated abstract illustration of durable work moving through a governed network of specialized AI agents, with evidence and feedback loops visible as luminous paths\nScene/backdrop: deep midnight navy field with layered architectural planes and subtle paper-like grain\nSubject: six distinct but non-anthropomorphic nodes orbiting a stable central ledger, connected through bounded gateways; two interlocking loops suggest work execution and system learning; small geometric checkpoints imply verification and human authority without depicting people or specific products\nStyle/medium: premium editorial vector-like digital illustration, restrained technical modernism, crisp geometry softened by atmospheric depth\nComposition/framing: wide 3:2 landscape, balanced focal structure centered slightly right, generous quiet negative space on the left for HTML title overlay, strong silhouette at thumbnail size\nLighting/mood: calm, precise, trustworthy, quietly ambitious\nColor palette: midnight navy, graphite, warm ivory, restrained cyan and amber accents\nConstraints: no text, letters, numerals, logos, trademarks, UI screenshots, maps, cryptocurrency imagery, finance symbols, private infrastructure, faces, humanoid robots, or watermarks; do not resemble a circuit-board stock image; keep all meaningful imagery within safe central margins",
+      "sources": [],
+      "derivation": null,
       "text_policy": "no_text_in_generated_pixels",
       "claim_status": "conceptual_not_evidence"
     },
@@ -34,6 +36,8 @@
       "generation_provider": null,
       "generation_model": null,
       "prompt": null,
+      "sources": [],
+      "derivation": null,
       "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
     },
@@ -52,6 +56,8 @@
       "generation_provider": "OpenAI",
       "generation_model": "Managed by Codex built-in image generation; model and version were not exposed",
       "prompt": "Use case: stylized-concept\nAsset type: public-safe conceptual illustration for a technical field-guide chapter\nPrimary request: illustrate two coupled cycles—one completing durable work, the other turning observed outcomes into safer system behavior—without using a literal flowchart\nScene/backdrop: deep midnight navy with subtle paper grain and spacious editorial composition\nSubject: two interlocking luminous circular paths, cyan for a work cycle and amber for a learning cycle; small abstract geometric artifacts travel around the cyan loop, pass through a bright evidence checkpoint, then seed reviewed constraint shapes on the amber loop; a single calm ivory threshold between loops suggests bounded human authority\nStyle/medium: premium editorial vector-like digital illustration, restrained technical modernism, crisp geometric forms with soft atmospheric depth\nComposition/framing: wide 3:2 landscape, central interlocking-loop motif, generous margins, strong silhouette at thumbnail size\nLighting/mood: precise, calm, trustworthy, reflective\nColor palette: midnight navy, graphite, warm ivory, restrained cyan and amber\nConstraints: no text, letters, numbers, labels, logos, trademarks, UI screenshots, maps, finance or cryptocurrency symbols, infrastructure products, faces, hands, humanoid robots, circuit-board clichés, or watermarks; do not imply direct peer-to-peer cognition or automatic authority expansion; keep all meaningful imagery inside safe central margins",
+      "sources": [],
+      "derivation": null,
       "text_policy": "no_text_in_generated_pixels",
       "claim_status": "conceptual_not_evidence"
     },
@@ -70,7 +76,71 @@
       "generation_provider": "OpenAI",
       "generation_model": "Managed by Codex built-in image generation; model and version were not exposed",
       "prompt": "ORIGINAL GENERATION PROMPT\nUse case: stylized-concept\nAsset type: public-safe conceptual illustration for a technical field-guide chapter\nPrimary request: illustrate mediated coordination among specialized AI capabilities through durable, auditable shared substrates rather than direct mind-to-mind communication\nScene/backdrop: deep midnight navy with subtle paper grain and layered architectural depth\nSubject: several distinct abstract geometric capability nodes arranged around a central durable work ledger; every exchange passes through visible bounded gateways, stamped artifact tiles, and an independent verification lens; paths are directional and separated, with no direct node-to-node connection; one small warm ivory threshold indicates retained human authority\nStyle/medium: premium editorial vector-like digital illustration, restrained technical modernism, crisp geometry with soft atmospheric depth\nComposition/framing: wide 3:2 landscape, central ledger and verification motif, balanced nodes around it, generous margins, clear at thumbnail size\nLighting/mood: precise, collaborative, accountable, calm\nColor palette: midnight navy, graphite, warm ivory, restrained cyan and amber accents\nConstraints: no text, letters, numbers, labels, logos, trademarks, UI screenshots, maps, finance or cryptocurrency symbols, infrastructure products, faces, hands, humanoid robots, brains, telepathy imagery, mesh-network cliché, circuit boards, or watermarks; do not imply shared cognition, hive mind, direct peer connectivity, or automatic authority; keep all meaningful imagery inside safe central margins\n\nEDIT PROMPT\nEdit this existing editorial illustration while preserving its midnight-navy palette, central durable ledger, bounded gateways, artifact tiles, directional cyan/amber paths, verification lens, ivory authority threshold, wide 3:2 composition, texture, and overall visual quality. Make only these conceptual corrections: remove every finance-, trading-, token-, gem-, and performance-chart-adjacent motif; replace them with neutral document and tool motifs. Break the impression of an exact six-agent hub-and-spoke inventory by recomposing the outer motifs as an intentionally illustrative, uneven set of example capability clusters plus partial artifact fragments. Keep all exchanges mediated and preserve no direct node-to-node paths. Make the central ledger flatter and more archival so it does not read as a central orchestrator. No text, labels, finance symbols, charts, coins, tokens, gemstones, people, robots, brains, network clichés, or watermarks. Do not imply shared cognition, hive mind, direct peer connectivity, automatic authority, a verified node count, deployed topology, or a central orchestrator.",
+      "sources": [],
+      "derivation": null,
       "text_policy": "no_text_in_generated_pixels",
+      "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.thumbnail-two-coupled-loops",
+      "role": "diagram_thumbnail",
+      "path": "assets/thumbnails/two-coupled-loops.png",
+      "media_type": "image/png",
+      "sha256": "aaed58001f830faf54966a549ff3366e62c928f3db48afc37b4113b18c13f196",
+      "width": 1200,
+      "height": 627,
+      "alt_text": "Editorial summary of two coupled loops. Durable work moves through bounded authority to a verified outcome; observed friction becomes a versioned constraint and then proven enforcement.",
+      "created_at": "2026-07-12",
+      "provenance_type": "derived",
+      "creation_method": "Source-bound SVG composition converted locally by macOS sips via tools/render_diagram_thumbnail.py",
+      "generation_provider": null,
+      "generation_model": null,
+      "prompt": null,
+      "sources": [
+        {"path": "diagrams/chapter-01/two-coupled-loops.light.svg", "sha256": "12b1685724896595b1850ddcf7deb5c4db20b265acb3fda7d0316a17a63266cc"}
+      ],
+      "derivation": {
+        "contract_version": 1,
+        "renderer_path": "tools/render_diagram_thumbnail.py",
+        "renderer_sha256": "4309ae80acb273822f6674c4517e8ababe2ec472fa6cdf46760ceb7522bed342",
+        "parameters": {
+          "title": "Work and system-learning loops",
+          "takeaway": "Durable work closes with evidence; measured outcomes become proven constraints.",
+          "lanes": [["Durable work item", "Bounded authority", "Verified outcome"], ["Observed friction", "Versioned constraint", "Proven enforcement"]]
+        }
+      },
+      "text_policy": "source_controlled_overlay",
+      "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.thumbnail-mediated-collaboration",
+      "role": "diagram_thumbnail",
+      "path": "assets/thumbnails/mediated-collaboration.png",
+      "media_type": "image/png",
+      "sha256": "92e7d7de5efb176dd02324f552012fa072ebdaf45c124e0b11ecc9aa15c1d348",
+      "width": 1200,
+      "height": 627,
+      "alt_text": "Editorial summary of mediated cross-plane collaboration. Durable work routes to a scoped capability, produces an evidence record, and receives independent verification without shared cognition.",
+      "created_at": "2026-07-12",
+      "provenance_type": "derived",
+      "creation_method": "Source-bound SVG composition converted locally by macOS sips via tools/render_diagram_thumbnail.py",
+      "generation_provider": null,
+      "generation_model": null,
+      "prompt": null,
+      "sources": [
+        {"path": "diagrams/chapter-03/mediated-collaboration.light.svg", "sha256": "c60a930aa660ecb842be2549848a85238ef9eed568e21748282f2fe14c464daf"}
+      ],
+      "derivation": {
+        "contract_version": 1,
+        "renderer_path": "tools/render_diagram_thumbnail.py",
+        "renderer_sha256": "4309ae80acb273822f6674c4517e8ababe2ec472fa6cdf46760ceb7522bed342",
+        "parameters": {
+          "title": "Mediated cross-plane collaboration",
+          "takeaway": "Agents coordinate through durable work and evidence—not shared cognition.",
+          "lanes": [["Durable work", "Scoped capability", "Evidence record", "Independent verification"]]
+        }
+      },
+      "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
     }
   ]
