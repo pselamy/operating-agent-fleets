@@ -20,10 +20,10 @@ class HistoryExceptionPolicyTests(unittest.TestCase):
         audit = json.loads(AUDIT.read_text(encoding="utf-8"))
         self.assertEqual(set(boundary), {
             "schema_version", "status", "decision_owner", "decision_recorded_at",
-            "decision_statement", "audit_record", "audited_revision", "scanner",
+            "decision_statement", "audit_record", "audit_record_sha256", "audited_revision", "scanner",
             "scanner_sha256", "finding_count", "finding_set_sha256", "categories",
             "forward_guard", "preserve_history", "history_rewrite_authorized",
-            "raw_values_recorded", "activation_rule",
+            "raw_values_recorded", "activation", "activation_rule",
         })
         self.assertEqual(boundary["schema_version"], 1)
         self.assertEqual(boundary["status"], "pending_second_h1")
@@ -45,6 +45,7 @@ class HistoryExceptionPolicyTests(unittest.TestCase):
         self.assertTrue(boundary["preserve_history"])
         self.assertFalse(boundary["history_rewrite_authorized"])
         self.assertFalse(boundary["raw_values_recorded"])
+        self.assertIsNone(boundary["activation"])
 
         categories = {(item["rule"], item["object_type"]): item["matches"]
                       for item in boundary["categories"]}
@@ -60,7 +61,7 @@ class HistoryExceptionPolicyTests(unittest.TestCase):
         policy = POLICY.read_text(encoding="utf-8")
         for required in (
             "those finding identities—not the pattern categories generally",
-            "same 124 finding identities and finding-set digest with no additional finding",
+            "same 124 finding identities, categories, counts, and finding-set digest with no missing or additional finding",
             "PASS WITH RECORDED HISTORICAL EXCEPTIONS",
             "pending_second_h1",
             "History rewriting is prohibited",

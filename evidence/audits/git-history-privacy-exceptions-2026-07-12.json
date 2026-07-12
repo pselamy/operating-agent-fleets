@@ -5,6 +5,7 @@
   "decision_recorded_at": "2026-07-12",
   "decision_statement": "H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.",
   "audit_record": "evidence/audits/git-history-privacy-2026-07-12.json",
+  "audit_record_sha256": "e8876018c9010aa191eda2ac51535c7f319c51da8a86534d9a7e6480be18db4f",
   "audited_revision": "3c2448fa3ddab37051f95c04d522adecc0e39b12",
   "scanner": "tools/privacy_history_scan.py",
   "scanner_sha256": "b7ef325598913d477adce0c4c6cf8823f6d3855eac57b3dba7b21833f85dc02c",
@@ -28,5 +29,6 @@
   "preserve_history": true,
   "history_rewrite_authorized": false,
   "raw_values_recorded": false,
-  "activation_rule": "A second H1 decision must approve the exact policy revision and change only this status to active after validation."
+  "activation": null,
+  "activation_rule": "A second H1 decision must bind the exact candidate revision and activation diff. Activation changes status to active, adds the external decision record metadata, updates the policy status text and tests, and requires a successful fresh verified-remote comparison before merge."
 }
