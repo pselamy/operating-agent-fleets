@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/pselamy/operating-agent-fleets",
+  "audited_revision": "3c2448fa3ddab37051f95c04d522adecc0e39b12",
+  "audited_at": "2026-07-12",
+  "revision_set": "evidence/audits/git-history-privacy-2026-07-12-refs.json",
+  "revision_set_file_sha256": "df5014d284e049f280b0fe726f5ea2e126907d1fd544cff6c64a54e31e238544",
+  "revision_set_canonical_sha256": "dae26f6fcff8325b689d58d36c56d8a60c2bbc616e0dae7a9cb50feb559d8a0a",
+  "clone_shallow": false,
+  "remote_refs": 57,
+  "fetched_remote_refs": 57,
+  "reachable_objects_examined": 535,
+  "reachable_object_set_sha256": "e5623cb1a4511287abcbd06c784eb33c5e74fed6a1a4060925a14a0f225af20e",
+  "historical_paths_examined": 118,
+  "historical_path_bytes_scanned": 232423,
+  "historical_path_set_sha256": "3150a8afe2caeeea6fc58f98ad69b732b9ef683e676bebf4ef04942f8d1f7eaa",
+  "payload_bytes_scanned": 10462774,
+  "scanner": "tools/privacy_history_scan.py",
+  "scanner_sha256": "b7ef325598913d477adce0c4c6cf8823f6d3855eac57b3dba7b21833f85dc02c",
+  "command": "python3 tools/privacy_history_scan.py --verify-remote origin",
+  "result": "REVISE",
+  "finding_count": 124,
+  "finding_set_sha256": "7a42c274bb021a4a07b08e10bb27a0d34019a839ded490fce8517205db852566",
+  "unique_finding_objects": 83,
+  "finding_summary": [
+    {
+      "rule": "private hostname",
+      "object_type": "commit",
+      "matches": 123,
+      "unique_objects": 82,
+      "classification": "Automatically generated local-host committer metadata; still forbidden by the current absolute disclosure policy."
+    },
+    {
+      "rule": "local file URL",
+      "object_type": "blob",
+      "matches": 1,
+      "unique_objects": 1,
+      "classification": "Historical synthetic validator fixture; still forbidden by the current absolute disclosure policy."
+    }
+  ],
+  "zero_match_rules": [
+    "private-key material",
+    "GitHub credential",
+    "AWS access key",
+    "local macOS path",
+    "local Linux path",
+    "private IPv4 address",
+    "embedded URL credential",
+    "US taxpayer identifier",
+    "Ethereum address",
+    "Telegram locator",
+    "Telegram chat identifier",
+    "raw transcript envelope"
+  ],
+  "decision": "Do not claim clean Git history. Do not rewrite public history or create a permissive baseline without explicit disclosure approval and a reviewed remediation decision.",
+  "limitations": [
+    "Pattern scanning cannot prove the absence of every secret or sensitive value.",
+    "The scan does not perform OCR or semantic inspection of binary image content.",
+    "The scan covers objects reachable from the recorded public branch, tag, and pull-request ref tips, not unreachable objects, forks, caches, workflow logs, release assets, or deleted collaboration surfaces no longer reachable from those refs.",
+    "A zero-match rule means only that this scanner found no matching pattern at this cutoff."
+  ]
+}
