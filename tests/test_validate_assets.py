@@ -59,6 +59,14 @@ class AssetValidationTests(unittest.TestCase):
         root, _ = self.fixture()
         self.assertEqual(assets.validate_assets(root), 1)
 
+    @unittest.skipUnless(Path("/usr/bin/sips").is_file(), "registered macOS replay runtime unavailable")
+    def test_repository_derived_assets_replay_on_registered_runtime(self) -> None:
+        manifest = json.loads((assets.ROOT / "assets" / "manifest.json").read_text(encoding="utf-8"))
+        expected = sum(item["provenance_type"] == "derived" for item in manifest["assets"])
+        replayer = mock.Mock(side_effect=assets._replay_thumbnail)
+        self.assertEqual(assets.validate_assets(replay_derived=True, thumbnail_replayer=replayer), len(manifest["assets"]))
+        self.assertEqual(replayer.call_count, expected)
+
     def test_shape_identity_and_policy_fail_closed(self) -> None:
         root, document = self.fixture()
         cases = (
@@ -184,7 +192,7 @@ class AssetValidationTests(unittest.TestCase):
         source.write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
         renderer = root / "tools" / "render_diagram_thumbnail.py"
         renderer.parent.mkdir()
-        renderer.write_text("synthetic renderer", encoding="utf-8")
+        renderer.write_bytes(assets.TRUSTED_RENDERER.read_bytes())
         target = root / "assets" / "thumbnails" / "sample.png"
         target.parent.mkdir()
         target.write_bytes(png(1200, 627))
@@ -203,7 +211,11 @@ class AssetValidationTests(unittest.TestCase):
         })
         document["assets"].append(record)
         self.write(root, document)
-        self.assertEqual(assets.validate_assets(root), 2)
+        replayer = mock.Mock(return_value=target.read_bytes())
+        self.assertEqual(assets.validate_assets(root, replay_derived=True, thumbnail_replayer=replayer), 2)
+        replayer.assert_called_once()
+        with self.assertRaisesRegex(assets.AssetValidationError, "not byte-reproducible"):
+            assets.validate_assets(root, replay_derived=True, thumbnail_replayer=mock.Mock(return_value=png(1200, 627) + b"different"))
 
         cases = (
             (lambda item: item.update(sources=[]), "derived provenance"),
@@ -221,6 +233,24 @@ class AssetValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(assets.AssetValidationError, message):
                 assets.validate_assets(root)
 
+        marker = root / "renderer-executed"
+        renderer.write_text(
+            f"from pathlib import Path\nPath({str(marker)!r}).write_text('unsafe')\n",
+            encoding="utf-8",
+        )
+        document["assets"][1]["derivation"]["renderer_sha256"] = hashlib.sha256(renderer.read_bytes()).hexdigest()
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "renderer provenance"):
+            assets.validate_assets(root, replay_derived=True)
+        self.assertFalse(marker.exists())
+
+        renderer.unlink()
+        renderer.symlink_to(assets.TRUSTED_RENDERER)
+        document["assets"][1]["derivation"]["renderer_sha256"] = assets.TRUSTED_RENDERER_SHA256
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "renderer provenance"):
+            assets.validate_assets(root)
+
     def test_derived_thumbnail_rejects_symlinked_source(self) -> None:
         root, document = self.fixture()
         outside = root / "outside.svg"
@@ -230,7 +260,7 @@ class AssetValidationTests(unittest.TestCase):
         source.symlink_to(outside)
         renderer = root / "tools" / "render_diagram_thumbnail.py"
         renderer.parent.mkdir()
-        renderer.write_text("synthetic renderer", encoding="utf-8")
+        renderer.write_bytes(assets.TRUSTED_RENDERER.read_bytes())
         target = root / "assets" / "thumbnails" / "sample.png"
         target.parent.mkdir()
         target.write_bytes(png(1200, 627))
@@ -257,9 +287,13 @@ class AssetValidationTests(unittest.TestCase):
         (root / "assets" / "manifest.json").write_text("not json", encoding="utf-8")
         with self.assertRaisesRegex(assets.AssetValidationError, "cannot load"):
             assets.validate_assets(root)
-        with mock.patch.object(assets, "validate_assets", return_value=2):
+        with mock.patch.object(assets, "validate_assets", return_value=2) as validate, mock.patch("sys.argv", ["validate_assets.py"]):
             self.assertEqual(assets.main(), 0)
-        with mock.patch.object(assets, "validate_assets", side_effect=assets.AssetValidationError("bad")):
+            validate.assert_called_once_with(replay_derived=False)
+        with mock.patch.object(assets, "validate_assets", return_value=2) as validate, mock.patch("sys.argv", ["validate_assets.py", "--replay-derived"]):
+            self.assertEqual(assets.main(), 0)
+            validate.assert_called_once_with(replay_derived=True)
+        with mock.patch.object(assets, "validate_assets", side_effect=assets.AssetValidationError("bad")), mock.patch("sys.argv", ["validate_assets.py"]):
             self.assertEqual(assets.main(), 1)
 
 
