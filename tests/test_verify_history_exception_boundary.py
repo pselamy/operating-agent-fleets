@@ -31,6 +31,11 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
     def boundary(self) -> dict:
         return json.loads(BOUNDARY.read_text(encoding="utf-8"))
 
+    def pending_boundary(self) -> dict:
+        boundary = self.boundary()
+        boundary.update(status="pending_second_h1", activation=None)
+        return boundary
+
     def write_boundary(self, value: dict) -> Path:
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
@@ -41,12 +46,12 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
     def recorded_refs(self) -> dict[str, str]:
         return self.refs
 
-    def test_pending_boundary_matches_exact_recorded_identities_but_cannot_pass(self) -> None:
+    def test_recorded_boundary_matches_exact_identities_but_cannot_self_authorize(self) -> None:
         refs = self.recorded_refs()
         with (mock.patch.object(verifier, "verify_remote_refs", return_value=refs),
               mock.patch.object(verifier, "scan_history", return_value=self.recorded_result)):
             result = verifier.compare(ROOT, "origin")
-        self.assertEqual(result.status, "pending_second_h1")
+        self.assertEqual(result.status, self.boundary()["status"])
         self.assertFalse(result.authorized)
         self.assertEqual(result.finding_count, 124)
         self.assertEqual(
@@ -159,7 +164,7 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
         bad_sum = self.boundary()
         bad_sum["categories"][0]["matches"] -= 1
         cases.append((bad_sum, "counts differ"))
-        pending_activation = self.boundary()
+        pending_activation = self.pending_boundary()
         pending_activation["activation"] = {}
         cases.append((pending_activation, "pending boundary"))
         bad_ready = self.boundary()
@@ -258,7 +263,7 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
         test_path = root / verifier.TEST_RELATIVE
         for path in (boundary_path, policy_path, test_path):
             path.parent.mkdir(parents=True, exist_ok=True)
-        pending = self.boundary()
+        pending = self.pending_boundary()
         boundary_path.write_text(json.dumps(pending, indent=2) + "\n", encoding="utf-8")
         policy_path.write_text("pending policy\n", encoding="utf-8")
         test_path.write_text("pending test\n", encoding="utf-8")
