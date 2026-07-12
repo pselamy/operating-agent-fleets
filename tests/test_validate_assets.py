@@ -35,11 +35,11 @@ class AssetValidationTests(unittest.TestCase):
         target.parent.mkdir(parents=True)
         target.write_bytes(png(2, 3))
         asset = {
-            "id": "editorial.hero", "role": "field_guide_hero",
+            "id": "editorial.hero", "role": "conceptual_illustration",
             "path": "assets/generated/hero.png", "media_type": "image/png",
             "sha256": hashlib.sha256(target.read_bytes()).hexdigest(), "width": 2, "height": 3,
             "alt_text": "A useful synthetic alternative description.", "created_at": "2026-07-12",
-            "creation_method": "synthetic test", "generation_provider": "test provider",
+            "provenance_type": "generated", "creation_method": "synthetic test", "generation_provider": "test provider",
             "generation_model": "test model v1", "prompt": "synthetic prompt",
             "text_policy": "no_text_in_generated_pixels", "claim_status": "conceptual_not_evidence",
         }
@@ -52,7 +52,7 @@ class AssetValidationTests(unittest.TestCase):
         (root / "assets" / "manifest.json").write_text(json.dumps(document), encoding="utf-8")
 
     def test_repository_asset_and_valid_fixture(self) -> None:
-        self.assertEqual(assets.validate_assets(), 1)
+        self.assertEqual(assets.validate_assets(), 2)
         root, _ = self.fixture()
         self.assertEqual(assets.validate_assets(root), 1)
 
@@ -65,6 +65,7 @@ class AssetValidationTests(unittest.TestCase):
             (lambda value: value["assets"][0].update(text_policy="generated_title"), "role or policy"),
             (lambda value: value["assets"][0].update(alt_text="short"), "alt text"),
             (lambda value: value["assets"][0].update(width=True), "dimension metadata"),
+            (lambda value: value["assets"][0].update(role="social_card_template"), "role-specific contract"),
         )
         for mutate, message in cases:
             candidate = copy.deepcopy(document)
@@ -83,7 +84,7 @@ class AssetValidationTests(unittest.TestCase):
             ("created_at", "today", "provenance"),
             ("created_at", "2026-02-31", "creation date"),
             ("generation_model", "", "generator provenance"),
-            ("prompt", "", "prompt"),
+            ("prompt", "", "generator provenance"),
         )
         for field, value, message in cases:
             candidate = copy.deepcopy(document)
@@ -109,6 +110,68 @@ class AssetValidationTests(unittest.TestCase):
         document["assets"][0]["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
         self.write(root, document)
         with self.assertRaisesRegex(assets.AssetValidationError, "incomplete PNG"):
+            assets.validate_assets(root)
+
+    def test_source_controlled_svg_contract_and_active_content(self) -> None:
+        root, document = self.fixture()
+        target = root / "assets" / "templates" / "card.svg"
+        target.parent.mkdir()
+        valid = (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" '
+            'role="img" aria-labelledby="title desc"><title id="title">Card</title>'
+            '<desc id="desc">Accessible description</desc><rect width="1200" height="627"/></svg>'
+        )
+        target.write_text(valid, encoding="utf-8")
+        record = copy.deepcopy(document["assets"][0])
+        record.update({
+            "id": "editorial.card", "role": "social_card_template",
+            "path": "assets/templates/card.svg", "media_type": "image/svg+xml",
+            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(), "width": 1200, "height": 627,
+            "provenance_type": "source_controlled", "creation_method": "hand-authored SVG",
+            "generation_provider": None, "generation_model": None, "prompt": None,
+            "text_policy": "source_controlled_overlay",
+        })
+        document["assets"].append(record)
+        self.write(root, document)
+        self.assertEqual(assets.validate_assets(root), 2)
+        record["generation_provider"] = "not allowed"
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "source-controlled provenance"):
+            assets.validate_assets(root)
+        record["generation_provider"] = None
+        target.write_text(valid.replace("</svg>", '<script>bad()</script></svg>'), encoding="utf-8")
+        record["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "active content"):
+            assets.validate_assets(root)
+        for fragment in (
+            '<animate attributeName="opacity" values="0;1"/>',
+            '<rect width="1" height="1" fill="url(https://example.com/paint)"/>',
+            '<rect width="1" height="1" style="fill:red"/>',
+        ):
+            target.write_text(valid.replace("</svg>", fragment + "</svg>"), encoding="utf-8")
+            record["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+            self.write(root, document)
+            with self.assertRaisesRegex(assets.AssetValidationError, "unsupported|unsafe"):
+                assets.validate_assets(root)
+
+    def test_source_controlled_provenance_and_svg_reference_fail_closed(self) -> None:
+        root, document = self.fixture()
+        record = document["assets"][0]
+        record.update(provenance_type="source_controlled", generation_provider=None, generation_model=None, prompt=None)
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "role-specific contract"):
+            assets.validate_assets(root)
+        target = root / record["path"]
+        target.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="2" height="3" viewBox="0 0 2 3" role="img" '
+            'aria-labelledby="t d"><title id="t">T</title><desc id="d">D</desc><rect width="2" height="3" fill="url(https://example.com/x)"/></svg>',
+            encoding="utf-8",
+        )
+        record.update(media_type="image/svg+xml", path="assets/generated/hero.svg", sha256=hashlib.sha256(target.read_bytes()).hexdigest(), text_policy="source_controlled_overlay")
+        target.rename(root / record["path"])
+        self.write(root, document)
+        with self.assertRaisesRegex(assets.AssetValidationError, "unsafe reference"):
             assets.validate_assets(root)
 
     def test_loader_header_and_cli_failures(self) -> None:

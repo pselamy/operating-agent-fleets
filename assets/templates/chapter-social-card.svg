@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="social-card-title social-card-desc">
+  <title id="social-card-title">Operating Agent Fleets chapter social-card template</title>
+  <desc id="social-card-desc">A midnight-blue editorial card with an amber and cyan two-loop motif on the right and source-controlled placeholders on the left. The motif is an editorial metaphor, not architecture; it does not represent deployed topology, peer connectivity, central orchestration, or a verified agent count.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071426"/>
+      <stop offset="1" stop-color="#0d2138"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="48%" r="55%">
+      <stop offset="0" stop-color="#1f5870" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#071426" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="627" rx="30" fill="url(#background)"/>
+  <rect width="1200" height="627" rx="30" fill="url(#glow)"/>
+  <path d="M58 72H1142" stroke="#f3ead3" stroke-opacity="0.16"/>
+  <path d="M58 555H1142" stroke="#f3ead3" stroke-opacity="0.16"/>
+
+  <g font-family="Inter, ui-sans-serif, system-ui, sans-serif" fill="#f7f0df">
+    <text x="70" y="126" font-size="25" font-weight="650" letter-spacing="3" fill="#7fd8ee">OPERATING AGENT FLEETS</text>
+    <text id="chapter-label" x="70" y="200" font-size="28" font-weight="700" fill="#e8bd68">[CHAPTER 00]</text>
+    <text id="title-line-1" x="70" y="270" font-size="52" font-weight="760" letter-spacing="-1.5">[TITLE LINE 1]</text>
+    <text id="title-line-2" x="70" y="330" font-size="52" font-weight="760" letter-spacing="-1.5">[TITLE LINE 2]</text>
+    <text id="title-line-3" x="70" y="390" font-size="52" font-weight="760" letter-spacing="-1.5">[TITLE LINE 3]</text>
+    <text x="70" y="438" font-size="23" fill="#c7d4df">Durable work · bounded authority · systems that learn</text>
+    <text id="chapter-url" x="70" y="520" font-size="22" fill="#91a7b8">selamy.dev/agent-fleets/[CHAPTER-SLUG]/</text>
+  </g>
+
+  <g transform="translate(900 314)" fill="none" stroke-linecap="round">
+    <ellipse rx="205" ry="116" stroke="#75d7ee" stroke-width="5" stroke-opacity="0.85" filter="url(#soft-glow)"/>
+    <ellipse rx="205" ry="116" transform="rotate(90)" stroke="#e8b95e" stroke-width="5" stroke-opacity="0.88" filter="url(#soft-glow)"/>
+    <circle r="63" fill="#102a44" stroke="#f3d994" stroke-width="3"/>
+    <path d="M-31-19 0-38 31-19 0 0Z" fill="#83d9ed" fill-opacity="0.35" stroke="#83d9ed" stroke-width="2"/>
+    <path d="M-31-4 0 15 31-4V19L0 38-31 19Z" fill="#e7bd69" fill-opacity="0.3" stroke="#e7bd69" stroke-width="2"/>
+    <g fill="#f6edd7" stroke="#071426" stroke-width="3">
+      <circle cx="-205" cy="0" r="12"/>
+      <circle cx="205" cy="0" r="12"/>
+      <circle cx="0" cy="-205" r="12"/>
+      <circle cx="0" cy="205" r="12"/>
+    </g>
+    <g fill="#75d7ee">
+      <circle cx="-142" cy="-84" r="7"/>
+      <circle cx="142" cy="84" r="7"/>
+    </g>
+    <g fill="#e8b95e">
+      <circle cx="84" cy="-142" r="7"/>
+      <circle cx="-84" cy="142" r="7"/>
+    </g>
+  </g>
+  <text x="1140" y="592" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="650" letter-spacing="1.4" fill="#91a7b8">EDITORIAL METAPHOR · NOT ARCHITECTURE</text>
+</svg>
