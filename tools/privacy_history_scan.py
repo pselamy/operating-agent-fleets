@@ -117,7 +117,15 @@ def historical_paths(root: Path, revisions: tuple[str, ...]) -> list[tuple[str, 
 def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
     if not remote or remote.startswith("-"):
         raise ValueError("remote name is invalid")
-    output = _git(root, "ls-remote", "--heads", "--tags", remote)
+    output = _git(
+        root,
+        "ls-remote",
+        remote,
+        "refs/heads/*",
+        "refs/tags/*",
+        "refs/pull/*/head",
+        "refs/pull/*/merge",
+    )
     expected: dict[str, str] = {}
     for line in output.decode("ascii", errors="strict").splitlines():
         object_id, ref = line.split("\t", 1)
@@ -127,6 +135,8 @@ def verify_remote_refs(root: Path, remote: str) -> dict[str, str]:
             local_ref = f"refs/remotes/{remote}/{ref.removeprefix('refs/heads/')}"
         elif ref.startswith("refs/tags/"):
             local_ref = ref
+        elif ref.startswith("refs/pull/"):
+            local_ref = f"refs/remotes/{remote}/{ref.removeprefix('refs/')}"
         else:
             raise ValueError(f"remote returned unsupported ref: {ref}")
         expected[local_ref] = object_id

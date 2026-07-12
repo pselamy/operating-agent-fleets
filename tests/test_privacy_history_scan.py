@@ -87,11 +87,12 @@ class PrivacyHistoryScanTests(unittest.TestCase):
         candidate = source / "public.md"
         candidate.write_text("first\n", encoding="utf-8")
         self.commit(source)
+        subprocess.run(["git", "tag", "-a", "v1", "-m", "safe tag"], cwd=source, check=True)
         clone_parent = tempfile.TemporaryDirectory()
         self.addCleanup(clone_parent.cleanup)
         clone = Path(clone_parent.name) / "clone"
         subprocess.run(["git", "clone", "-q", source.as_uri(), str(clone)], check=True)
-        self.assertEqual(len(verify_remote_refs(clone, "origin")), 1)
+        self.assertEqual(len(verify_remote_refs(clone, "origin")), 2)
         candidate.write_text("second\n", encoding="utf-8")
         self.commit(source)
         with self.assertRaisesRegex(ValueError, "stale relative to remote"):
