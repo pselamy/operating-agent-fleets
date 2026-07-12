@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "status": "ready_for_second_h1",
+  "decision_owner": "Patrick Selamy",
+  "decision_recorded_at": "2026-07-12",
+  "decision_statement": "H1 REVISE: preserve history; treat the two recorded audit categories as bounded historical exceptions; add a forward guard; do not rewrite.",
+  "audit_record": "evidence/audits/git-history-privacy-2026-07-12.json",
+  "audit_record_sha256": "e8876018c9010aa191eda2ac51535c7f319c51da8a86534d9a7e6480be18db4f",
+  "audited_revision": "3c2448fa3ddab37051f95c04d522adecc0e39b12",
+  "scanner": "tools/privacy_history_scan.py",
+  "scanner_sha256": "b7ef325598913d477adce0c4c6cf8823f6d3855eac57b3dba7b21833f85dc02c",
+  "finding_count": 124,
+  "finding_set_sha256": "7a42c274bb021a4a07b08e10bb27a0d34019a839ded490fce8517205db852566",
+  "categories": [
+    {
+      "rule": "private hostname",
+      "object_type": "commit",
+      "matches": 123,
+      "treatment": "bounded historical exception only"
+    },
+    {
+      "rule": "local file URL",
+      "object_type": "blob",
+      "matches": 1,
+      "treatment": "bounded historical exception only"
+    }
+  ],
+  "forward_guard": "tools/privacy_forward_guard.py",
+  "preserve_history": true,
+  "history_rewrite_authorized": false,
+  "raw_values_recorded": false,
+  "activation": {
+    "policy_base_revision": "aa883e4277bb80559a8822dc016922b15ef8100e",
+    "allowed_paths": [
+      "docs/disclosure-policy.md",
+      "evidence/audits/git-history-privacy-exceptions-2026-07-12.json",
+      "tests/test_history_exception_policy.py"
+    ]
+  },
+  "activation_rule": "A second H1 decision must bind the exact ready candidate revision through an external attestation. The ready candidate may differ from its pending policy base only at the declared activation paths. No repository field can activate the boundary by itself."
+}
