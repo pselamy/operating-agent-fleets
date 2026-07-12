@@ -28,6 +28,20 @@
       "visual_sha256": "1f47cc36366e80fa0a32d0958238314d1eb17e6e79242a4b3be9a4516d46b158",
       "evidence_cutoff": "2026-07-11",
       "content_sha256": "b4aed89e28af29be3f2e1b172bbb39ff86602e496544ddf661ed08d1e751718f"
+    },
+    {
+      "id": "chapter-06-memory-linkedin-newsletter",
+      "chapter": 6,
+      "channel": "linkedin_newsletter",
+      "canonical_url": "https://selamy.dev/agent-fleets/06-memory-and-provenance/",
+      "source_revision": "29838f007f4dc49ef78a8822b39ade0500588aa0",
+      "source_path": "guide/06-memory-and-provenance.md",
+      "content_path": "distribution/packages/chapter-06-memory-linkedin-newsletter.md",
+      "visual_path": "assets/thumbnails/memory-and-provenance.png",
+      "alt_text": "Editorial summary of memory with provenance. A read finds a semantic candidate, resolves its versioned source, verifies scope and cutoff, and uses source-backed context. A write updates the source before indexing an immutable revision; correction applies an active tombstone before rebuilding and verifying the derived index.",
+      "visual_sha256": "77e9064da69156f043dd298e5782027ba954f625d6ada55c2a62d0aacd65133d",
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "670d88449fae3cbbd55b16b8ee8d21d85766ff304237070bc8c8ec4080265c03"
     }
   ]
 }
