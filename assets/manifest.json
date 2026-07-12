@@ -235,6 +235,37 @@
       },
       "text_policy": "source_controlled_overlay",
       "claim_status": "conceptual_not_evidence"
+    },
+    {
+      "id": "editorial.thumbnail-consequence-authority",
+      "role": "diagram_thumbnail",
+      "path": "assets/thumbnails/consequence-authority.png",
+      "media_type": "image/png",
+      "sha256": "fc024d0f18b1e17f736a83dab193ff36e47639a74b73580956e176d49c42afe3",
+      "width": 1200,
+      "height": 627,
+      "alt_text": "Editorial summary of consequence-based authority for one operation. Increasing consequence raises the minimum gate from preparation, to expiring bounded preapproval, to an explicit human decision, to a decisive act performed by a human. The tier is reselected for each operation and never accumulates as permanent clearance. Complete preconditions are necessary but non-authorizing; a separate bounded authority grant permits action. Postcondition evidence supports acceptance but never retroactively authorizes the operation; missing evidence marks the result unverified for reconciliation.",
+      "created_at": "2026-07-12",
+      "provenance_type": "derived",
+      "creation_method": "Source-bound SVG composition converted locally by macOS sips via tools/render_diagram_thumbnail.py",
+      "generation_provider": null,
+      "generation_model": null,
+      "prompt": null,
+      "sources": [
+        {"path": "diagrams/chapter-02/consequence-authority-matrix.light.svg", "sha256": "b5a3dcee9d02128592978684154d218ab07f849bd7f1af5d84c50d072f92be11"}
+      ],
+      "derivation": {
+        "contract_version": 1,
+        "renderer_path": "tools/render_diagram_thumbnail.py",
+        "renderer_sha256": "4309ae80acb273822f6674c4517e8ababe2ec472fa6cdf46760ceb7522bed342",
+        "parameters": {
+          "title": "Authority scale for one operation",
+          "takeaway": "Higher consequence strengthens the gate; reselect each operation; no accumulation.",
+          "lanes": [["Tier 0: prepare", "Tier 1: expiring bound", "Tier 2: human decision", "Tier 3: human performs"], ["Preconditions required", "Separate authority grant", "Verify postcondition", "Accept or reconcile"]]
+        }
+      },
+      "text_policy": "source_controlled_overlay",
+      "claim_status": "conceptual_not_evidence"
     }
   ]
 }
