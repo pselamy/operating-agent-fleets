@@ -123,7 +123,7 @@ class DistributionValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(distribution.DistributionValidationError, message):
                 self.validate(root)
         candidate = copy.deepcopy(manifest)
-        candidate["packages"][0]["channel"] = "medium"
+        candidate["packages"][0]["channel"] = "linkedin_newsletter"
         candidate["packages"][0]["visual_path"] = None
         self.write(root, candidate)
         with self.assertRaisesRegex(distribution.DistributionValidationError, "without a visual"):
@@ -267,6 +267,37 @@ class DistributionValidationTests(unittest.TestCase):
         self.write(root, manifest)
         with self.assertRaisesRegex(distribution.DistributionValidationError, "invalid or duplicate entry"):
             self.validate(root)
+
+    def test_medium_channel_requires_exact_delayed_import_envelope(self) -> None:
+        root, manifest = self.fixture()
+        package = manifest["packages"][0]
+        package.update(channel="medium", visual_path=None, alt_text=None, visual_sha256=None)
+        content = root / package["content_path"]
+
+        def write_medium(*, import_mode: str, article_boundary: str = "not the article body") -> None:
+            content.write_text(
+                f"{distribution.DRAFT_MARKER}\n"
+                f"**Canonical URL:** {package['canonical_url']}\n"
+                f"**Pinned field-guide revision:** `{package['source_revision']}`\n"
+                f"**Pinned source path:** `{package['source_path']}`\n"
+                f"**Evidence cutoff:** {package['evidence_cutoff']}\n"
+                f"**Import mode:** {import_mode}\n"
+                "## Stop conditions\nStop.\n"
+                "## Import and verification procedure\nVerify.\n"
+                f"This is {article_boundary}.\n",
+                encoding="utf-8",
+            )
+            package["content_sha256"] = hashlib.sha256(content.read_bytes()).hexdigest()
+            self.write(root, manifest)
+
+        exact_mode = "Medium's canonical-URL importer; do not paste or maintain a second article copy."
+        write_medium(import_mode=exact_mode)
+        self.assertEqual(self.validate(root), 1)
+
+        for import_mode, boundary in (("copy and paste", "not the article body"), (exact_mode, "a duplicate article")):
+            write_medium(import_mode=import_mode, article_boundary=boundary)
+            with self.assertRaisesRegex(distribution.DistributionValidationError, "delayed Medium import contract"):
+                self.validate(root)
 
     def test_canonical_link_and_git_source_are_verified(self) -> None:
         root, manifest = self.fixture()

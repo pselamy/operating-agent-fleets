@@ -185,6 +185,19 @@ def validate_distribution(
             raise DistributionValidationError(
                 f"package {package_id} must fit the LinkedIn limit and end with exactly one visible question")
         visual = package["visual_path"]
+        if package["channel"] == "medium":
+            medium_contract = (
+                f"**Pinned field-guide revision:** `{revision}`",
+                f"**Pinned source path:** `{package['source_path']}`",
+                f"**Evidence cutoff:** {package['evidence_cutoff']}",
+                "**Import mode:** Medium's canonical-URL importer; do not paste or maintain a second article copy.",
+                "## Stop conditions",
+                "## Import and verification procedure",
+                "not the article body",
+            )
+            if visual is not None or any(content_text.count(marker) != 1 for marker in medium_contract):
+                raise DistributionValidationError(
+                    f"package {package_id} lacks the exact delayed Medium import contract")
         if package["channel"] == "linkedin_post" and visual is None:
             raise DistributionValidationError(f"package {package_id} LinkedIn post lacks its required visual")
         if visual is not None:
