@@ -227,6 +227,24 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
             self.assertEqual(verifier.main(), 0)
         self.assertIn("PASS WITH RECORDED HISTORICAL EXCEPTIONS", stdout.getvalue())
 
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        target = Path(directory.name) / "external.json"
+        target.write_text("{}", encoding="utf-8")
+        linked = Path(directory.name) / "external-link.json"
+        linked.symlink_to(target)
+        captured: dict[str, Path | None] = {}
+
+        def capture_compare(*args, **kwargs):
+            captured["attestation_path"] = kwargs["attestation_path"]
+            raise verifier.BoundaryError("stop after argument capture")
+
+        with (mock.patch("sys.argv", argv + ["--attestation", str(linked)]),
+              mock.patch.object(verifier, "compare", side_effect=capture_compare)):
+            self.assertEqual(verifier.main(), 2)
+        self.assertEqual(captured["attestation_path"], linked)
+        self.assertTrue(captured["attestation_path"].is_symlink())
+
     def test_ready_candidate_requires_exact_diff_and_external_attestation(self) -> None:
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
@@ -308,6 +326,14 @@ class HistoryExceptionBoundaryVerifierTests(unittest.TestCase):
             with self.assertRaisesRegex(verifier.BoundaryError, "symbolic link"):
                 verifier._validate_current_candidate(
                     root, ready, boundary_path, current, symlink_attestation
+                )
+
+        worktree_link = root / "external-attestation-link.json"
+        worktree_link.symlink_to(attestation_path)
+        with verifier._replacement_objects_disabled():
+            with self.assertRaisesRegex(verifier.BoundaryError, "symbolic link"):
+                verifier._validate_current_candidate(
+                    root, ready, boundary_path, current, worktree_link
                 )
 
         git_attestation = root / ".git" / "attestation.json"

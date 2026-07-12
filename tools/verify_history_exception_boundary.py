@@ -362,7 +362,7 @@ def main() -> int:
             args.remote,
             root / BOUNDARY_RELATIVE,
             current_revision=args.current,
-            attestation_path=args.attestation.resolve() if args.attestation else None,
+            attestation_path=args.attestation,
         )
     except BoundaryMismatch:
         print("Historical exception comparison REVISE: identity-set mismatch", file=sys.stderr)
