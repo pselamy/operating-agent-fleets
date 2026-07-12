@@ -6,6 +6,7 @@ Record the artifact, immutable revision, reviewer, review date, and result. A re
 
 - [ ] Secret and privacy scanner passes on the full diff and generated artifacts.
 - [ ] `python3 tools/privacy_history_scan.py --verify-remote origin` passes over every reachable blob, commit, annotated tag, and historical path from fetched non-shallow branch, tag, and public pull-request refs after proving local refs match the remote; record the exact immutable ref map and result.
+- [ ] Before accepting a new branch in this SHA-1 repository, `python3 tools/privacy_forward_guard.py --base <trusted-full-40-character-commit-oid> --head <candidate-full-40-character-commit-oid>` passes. The tool rejects movable refs and extended revision expressions, disables Git replacement objects for the complete validation and scan, requires a non-empty descendant range, scans commit and blob objects reachable through that range, and scans every path name in every candidate commit tree—including unchanged inherited path names. Base-reachable blob payloads are not rescanned, and annotated tag objects are outside a commit-to-commit range; the full verified-remote history audit remains mandatory for tags and historical baseline findings. This forward guard prevents recurrence on the branch candidate surface; it does not convert the full historical audit from `REVISE` to `PASS`.
 - [ ] Link checker finds no private, authenticated, local, or expiring locator.
 - [ ] Images, SVG source, alt text, metadata, workflow logs, and downloadable artifacts were included in the scan.
 
