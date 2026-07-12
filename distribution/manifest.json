@@ -14,6 +14,20 @@
       "visual_sha256": "92e7d7de5efb176dd02324f552012fa072ebdaf45c124e0b11ecc9aa15c1d348",
       "evidence_cutoff": "2026-07-11",
       "content_sha256": "5196797420091e2b23a37caa02bc02acbe57bf69eb55a8f92db791c7760215dc"
+    },
+    {
+      "id": "chapter-05-throughput-linkedin-newsletter",
+      "chapter": 5,
+      "channel": "linkedin_newsletter",
+      "canonical_url": "https://selamy.dev/agent-fleets/05-throughput-and-supersession/",
+      "source_revision": "b5020d3fb5a640d5552d24fab7134df03a030ac0",
+      "source_path": "guide/05-throughput-and-supersession.md",
+      "content_path": "distribution/packages/chapter-05-throughput-linkedin-newsletter.md",
+      "visual_path": "assets/thumbnails/lane-scoped-supersession.png",
+      "alt_text": "Editorial summary of lane-scoped supersession. A new revision requests cancellation of safe validation, waits for termination, and then validates the latest source SHA. In a separate lane, an active mutation finishes before an artifact digest is authorized and the real target is verified.",
+      "visual_sha256": "1f47cc36366e80fa0a32d0958238314d1eb17e6e79242a4b3be9a4516d46b158",
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "b4aed89e28af29be3f2e1b172bbb39ff86602e496544ddf661ed08d1e751718f"
     }
   ]
 }
