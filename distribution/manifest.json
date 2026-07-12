@@ -98,6 +98,48 @@
       "visual_sha256": "3523aa61ef1825a5eee05f9c5490ccfc0d2fbd9d843b8d59eb385318f92d4f33",
       "evidence_cutoff": "2026-07-11",
       "content_sha256": "1355acf6f4cf1095436f3c24f184d1030d4d6a418cbf67170361e1bab12b121d"
+    },
+    {
+      "id": "chapter-05-throughput-medium-import",
+      "chapter": 5,
+      "channel": "medium",
+      "canonical_url": "https://selamy.dev/agent-fleets/05-throughput-and-supersession/",
+      "source_revision": "b032b4d528e59c700fa32a3c3e3d7235fa8f09d9",
+      "source_path": "guide/05-throughput-and-supersession.md",
+      "content_path": "distribution/packages/chapter-05-throughput-medium-import.md",
+      "visual_path": null,
+      "alt_text": null,
+      "visual_sha256": null,
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "fcc67d5d20d035926c029a5c2fef92daeb860f8c0f625ee1092adacebe6ae8a6"
+    },
+    {
+      "id": "chapter-06-memory-medium-import",
+      "chapter": 6,
+      "channel": "medium",
+      "canonical_url": "https://selamy.dev/agent-fleets/06-memory-and-provenance/",
+      "source_revision": "b032b4d528e59c700fa32a3c3e3d7235fa8f09d9",
+      "source_path": "guide/06-memory-and-provenance.md",
+      "content_path": "distribution/packages/chapter-06-memory-medium-import.md",
+      "visual_path": null,
+      "alt_text": null,
+      "visual_sha256": null,
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "61f778c48e1bb24a48435b7f1d8e0883998838c141281068d49dbd0b2d0e96eb"
+    },
+    {
+      "id": "chapter-07-portfolio-medium-import",
+      "chapter": 7,
+      "channel": "medium",
+      "canonical_url": "https://selamy.dev/agent-fleets/07-agent-portfolio/",
+      "source_revision": "b032b4d528e59c700fa32a3c3e3d7235fa8f09d9",
+      "source_path": "guide/07-agent-portfolio.md",
+      "content_path": "distribution/packages/chapter-07-portfolio-medium-import.md",
+      "visual_path": null,
+      "alt_text": null,
+      "visual_sha256": null,
+      "evidence_cutoff": "2026-07-11",
+      "content_sha256": "300b49c748b2db4555ec68564bb1bd35c9eac4daf9c7d65a1f58b6af6b792f99"
     }
   ]
 }

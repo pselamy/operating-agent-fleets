@@ -8,6 +8,8 @@ Supported channels are:
 - `linkedin_post`: a short post with one public-safe visual and one closing question; and
 - `medium`: optional delayed syndication that declares the canonical URL.
 
+Medium packages are delayed-import control envelopes, not duplicate article bodies. The canonical page supplies the article through Medium's URL importer only after deployment, independent reachability, independently confirmed indexing with observer and timestamp, no-draft-metadata verification, and the external human release gate. This avoids maintaining a second prose source while still pinning the intended chapter, import method, stop conditions, comparison surface, and post-action verification procedure.
+
 ## Pre-H4 workflow
 
 1. Pin the exact merged field-guide source revision and chapter source path.

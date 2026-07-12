@@ -113,7 +113,7 @@ def _visual_registry(root: Path, *, validate_registries: bool = True) -> dict[st
     return registry
 
 
-def _verify_revision_path(root: Path, revision: str, path: str, *, expected_digest: str | None = None) -> None:
+def _verify_revision_path(root: Path, revision: str, path: str, *, expected_digest: str | None = None) -> bytes:
     result = subprocess.run(
         ["git", "show", f"{revision}:{path}"],
         cwd=root, capture_output=True, check=False,
@@ -122,6 +122,50 @@ def _verify_revision_path(root: Path, revision: str, path: str, *, expected_dige
         raise DistributionValidationError(f"source revision does not contain declared path: {path}")
     if expected_digest is not None and hashlib.sha256(result.stdout).hexdigest() != expected_digest:
         raise DistributionValidationError(f"source revision blob digest differs for declared path: {path}")
+    return result.stdout
+
+
+def _chapter_title(source: bytes, chapter: int) -> str:
+    try:
+        first_line = source.decode("utf-8").splitlines()[0]
+    except (UnicodeDecodeError, IndexError) as exc:
+        raise DistributionValidationError("pinned chapter lacks a UTF-8 title") from exc
+    match = re.fullmatch(r"# ([0-9]+)\. (.+)", first_line)
+    if match is None or int(match[1]) != chapter:
+        raise DistributionValidationError("pinned chapter title disagrees with package identity")
+    return match[2]
+
+
+def _medium_envelope(package: dict, canonical_title: str) -> str:
+    """Render the only accepted pre-H4 Medium URL-import control envelope."""
+    return f"""{DRAFT_MARKER}
+# Delayed Medium import envelope — Chapter {package['chapter']}
+
+- **Canonical title:** {canonical_title}
+- **Canonical URL:** {package['canonical_url']}
+- **Pinned field-guide revision:** `{package['source_revision']}`
+- **Pinned source path:** `{package['source_path']}`
+- **Evidence cutoff:** {package['evidence_cutoff']}
+- **Import mode:** Medium's canonical-URL importer; do not paste or maintain a second article copy.
+- **Canonical readiness requirement:** deployed from the pinned revision; independently reachable; independently confirmed indexed with observer and timestamp; free of draft metadata; content-aligned with the pinned source.
+- **Human gate requirement:** Patrick's decision must bind the exact imported preview digest before any Medium distribution action.
+
+## Stop conditions
+
+Do not begin the import until every canonical readiness requirement above has independent evidence in the external release envelope. Stop if the deployed title, headings, diagrams, limitations, evidence cutoff, correction path, or content digest differ from the pinned source. Stop if Patrick's exact-preview decision is absent or bound to a different digest.
+
+## Import and verification procedure
+
+1. Record the independent indexing observer and timestamp, canonical page digest, retrieval time, source revision, and no-draft-metadata result in the external release envelope.
+2. Give Medium's importer only the canonical URL above.
+3. Preview without distribution; compare the title, every heading, link, limitation, diagram, image, alt text, evidence cutoff, and correction path with the verified canonical page.
+4. Confirm that Medium exposes the canonical link back to the exact page above and has not introduced a competing canonical target.
+5. Bind the imported preview digest and any Medium-managed image transformations to the same external release envelope.
+6. Stop for Patrick's decision on that exact preview; repository state, canonical deployment, or a successful preview cannot authorize distribution.
+7. After Patrick performs the external action, independently retrieve the Medium page and verify its canonical metadata, content, links, images, and accessibility text; record discrepancies and correct the canonical source first when facts change.
+
+This file is an import control envelope, not the article body, a release decision, or evidence that an import occurred.
+"""
 
 
 def validate_distribution(
@@ -161,9 +205,12 @@ def validate_distribution(
         revision = package["source_revision"]
         if not isinstance(revision, str) or SHA.fullmatch(revision) is None:
             raise DistributionValidationError(f"package {package_id} lacks an immutable source revision")
-        _file(root, package["source_path"], "guide/")
+        source_file = _file(root, package["source_path"], "guide/")
         if verify_git:
-            _verify_revision_path(root, revision, package["source_path"])
+            source_blob = _verify_revision_path(root, revision, package["source_path"])
+        else:
+            source_blob = source_file.read_bytes()
+        canonical_title = _chapter_title(source_blob, chapter)
         content = _file(root, package["content_path"], "distribution/packages/")
         if package["content_path"] in content_paths:
             raise DistributionValidationError(f"package {package_id} reuses a content path")
@@ -185,6 +232,10 @@ def validate_distribution(
             raise DistributionValidationError(
                 f"package {package_id} must fit the LinkedIn limit and end with exactly one visible question")
         visual = package["visual_path"]
+        if package["channel"] == "medium":
+            if visual is not None or content_text != _medium_envelope(package, canonical_title):
+                raise DistributionValidationError(
+                    f"package {package_id} lacks the exact delayed Medium import contract")
         if package["channel"] == "linkedin_post" and visual is None:
             raise DistributionValidationError(f"package {package_id} LinkedIn post lacks its required visual")
         if visual is not None:
